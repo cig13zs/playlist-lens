@@ -1,0 +1,10 @@
+node_modules/
+dist/
+tests/screenshots/
+tests/fixtures/playlist-under-100.html
+tests/fixtures/playlist-over-100.html
+BUILD-PROMPT.md
+BUILD-REPORT.md
+PROGRESS.md
+FIX-*.md
+store/LISTING.md

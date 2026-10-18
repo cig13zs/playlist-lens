@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Playlist Lens: sort YouTube playlists by length and time",
+  "short_name": "Playlist Lens",
+  "version": "1.0.0",
+  "description": "Fit videos into the time you have. Sort YouTube playlists by duration, hide watched videos, and see honest unwatched totals.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["lib/lens.js", "selectors.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Playlist Lens",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

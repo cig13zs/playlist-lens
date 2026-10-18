@@ -1,0 +1,335 @@
+/* Playlist Lens bar styles, matched to YouTube light and dark themes */
+
+:root {
+  --pl-font: "Roboto", "YouTube Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --pl-bg: #f9f9f9;
+  --pl-border: #e5e5e5;
+  --pl-text-primary: #0f0f0f;
+  --pl-text-secondary: #606060;
+  --pl-chip-bg: #f2f2f2;
+  --pl-chip-bg-hover: #e5e5e5;
+  --pl-chip-active-bg: #0f0f0f;
+  --pl-chip-active-text: #ffffff;
+  --pl-card-bg: #ffffff;
+  --pl-focus-ring: #065fd4;
+  --pl-accent: #c00;
+  --pl-kofi-color: #ff5e5b;
+}
+
+html[dark], [dark] {
+  --pl-bg: #1f1f1f;
+  --pl-border: #383838;
+  --pl-text-primary: #f1f1f1;
+  --pl-text-secondary: #aaaaaa;
+  --pl-chip-bg: #272727;
+  --pl-chip-bg-hover: #3f3f3f;
+  --pl-chip-active-bg: #f1f1f1;
+  --pl-chip-active-text: #0f0f0f;
+  --pl-card-bg: #282828;
+  --pl-focus-ring: #3ea6ff;
+  --pl-accent: #f00;
+  --pl-kofi-color: #ff5e5b;
+}
+
+/* Playlist Lens Root Container */
+#playlist-lens-bar {
+  font-family: var(--pl-font);
+  background-color: var(--pl-bg);
+  border: 1px solid var(--pl-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 12px 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  color: var(--pl-text-primary);
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 100;
+  clear: both;
+}
+
+/* Top primary row */
+.playlist-lens-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Left side: runtime statistics */
+.playlist-lens-runtime-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 220px;
+}
+
+.playlist-lens-runtime-header {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pl-text-primary);
+}
+
+.playlist-lens-completeness {
+  font-size: 12px;
+  color: var(--pl-text-secondary);
+}
+
+.playlist-lens-budget-summary {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pl-focus-ring);
+}
+
+/* Right side: controls (minutes box, sort chips, toggle, load all, reset) */
+.playlist-lens-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Time budget box */
+.playlist-lens-budget-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--pl-chip-bg);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+
+.playlist-lens-budget-box:focus-within {
+  border-color: var(--pl-focus-ring);
+  outline: 2px solid var(--pl-focus-ring);
+  outline-offset: 1px;
+}
+
+.playlist-lens-budget-box label {
+  cursor: pointer;
+  color: var(--pl-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.playlist-lens-input {
+  width: 48px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--pl-border);
+  color: var(--pl-text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  padding: 2px 0;
+  outline: none;
+}
+
+.playlist-lens-input:focus {
+  border-bottom-color: var(--pl-focus-ring);
+}
+
+/* Chips and Buttons */
+.playlist-lens-chip,
+.playlist-lens-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--pl-border);
+  background-color: var(--pl-chip-bg);
+  color: var(--pl-text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  user-select: none;
+  text-decoration: none;
+}
+
+.playlist-lens-chip:hover,
+.playlist-lens-btn:hover {
+  background-color: var(--pl-chip-bg-hover);
+}
+
+.playlist-lens-chip:focus-visible,
+.playlist-lens-btn:focus-visible {
+  outline: 2px solid var(--pl-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Active chip state */
+.playlist-lens-chip.is-active {
+  background-color: var(--pl-chip-active-bg);
+  color: var(--pl-chip-active-text);
+  border-color: transparent;
+}
+
+/* Hide watched toggle chip */
+.playlist-lens-toggle-chip input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--pl-text-secondary);
+  border-radius: 3px;
+  margin: 0;
+  cursor: pointer;
+  position: relative;
+  display: grid;
+  place-content: center;
+  background-color: transparent;
+}
+
+.playlist-lens-toggle-chip input[type="checkbox"]:checked {
+  background-color: var(--pl-focus-ring);
+  border-color: var(--pl-focus-ring);
+}
+
+.playlist-lens-toggle-chip input[type="checkbox"]:checked::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background-color: #fff;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+/* Action buttons */
+.playlist-lens-btn-reset {
+  background: transparent;
+  border-color: transparent;
+  color: var(--pl-text-secondary);
+}
+
+.playlist-lens-btn-reset:hover {
+  color: var(--pl-text-primary);
+  background-color: var(--pl-chip-bg);
+}
+
+/* Dismissible Support & Rating Cards */
+.playlist-lens-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background-color: var(--pl-card-bg);
+  border: 1px solid var(--pl-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--pl-text-primary);
+  margin-top: 4px;
+}
+
+.playlist-lens-card-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.playlist-lens-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.playlist-lens-btn-kofi {
+  background-color: var(--pl-kofi-color);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+}
+
+.playlist-lens-btn-kofi:hover {
+  background-color: #e04e4b;
+  color: #ffffff;
+}
+
+.playlist-lens-btn-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--pl-text-secondary);
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.playlist-lens-btn-dismiss:hover {
+  color: var(--pl-text-primary);
+  text-decoration: underline;
+}
+
+/* Fallback Notice when page rows cannot be parsed */
+.playlist-lens-notice {
+  padding: 8px 12px;
+  background-color: var(--pl-chip-bg);
+  border-radius: 8px;
+  color: var(--pl-text-secondary);
+  font-size: 12px;
+}
+
+/* Row ordering and hiding in native YouTube list */
+.playlist-lens-container-active {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.playlist-lens-container-active > * {
+  order: var(--pl-order, 999999);
+}
+
+.playlist-lens-hidden {
+  display: none !important;
+}
+
+/* Disable drag handles during active sort/budget filter to prevent accidental playlist modification */
+.playlist-lens-reorder-disabled #reorder,
+.playlist-lens-reorder-disabled #handle,
+.playlist-lens-reorder-disabled [aria-label*="drag" i],
+.playlist-lens-reorder-disabled [aria-label*="reorder" i] {
+  opacity: 0.25 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+/* Remaining duration badge for partially watched videos */
+.playlist-lens-remaining-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: rgba(0, 0, 0, 0.82);
+  color: #3ea6ff;
+  border: 1px solid rgba(62, 166, 255, 0.4);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  z-index: 10;
+  pointer-events: none;
+  letter-spacing: 0.2px;
+}
+
+/* Responsive wrap below 700px */
+@media (max-width: 700px) {
+  #playlist-lens-bar {
+    padding: 8px 10px;
+  }
+  .playlist-lens-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .playlist-lens-controls {
+    justify-content: flex-start;
+  }
+}

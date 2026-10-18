@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Playlist Lens Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f9f9f9;
+      --border: #e5e5e5;
+      --text: #0f0f0f;
+      --text-muted: #606060;
+      --primary: #065fd4;
+      --kofi: #ff5e5b;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f0f;
+        --card-bg: #1f1f1f;
+        --border: #383838;
+        --text: #f1f1f1;
+        --text-muted: #aaaaaa;
+        --primary: #3ea6ff;
+      }
+    }
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 32px 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 560px;
+      width: 100%;
+    }
+    header {
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 6px 0;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin: 0;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .setting-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .setting-row:first-child {
+      padding-top: 0;
+    }
+    .setting-info {
+      padding-right: 16px;
+    }
+    .setting-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .setting-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    select, input[type="checkbox"] {
+      cursor: pointer;
+    }
+    select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+    }
+    .btn:hover {
+      background: var(--border);
+    }
+    .btn-kofi {
+      background-color: var(--kofi);
+      color: #fff;
+      border: none;
+    }
+    .btn-kofi:hover {
+      background-color: #e04e4b;
+      color: #fff;
+    }
+    footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    #save-status {
+      font-size: 12px;
+      color: #2ba640;
+      margin-top: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Playlist Lens Settings</h1>
+      <p class="subtitle">Default options for YouTube playlist duration filtering and sorting.</p>
+    </header>
+
+    <div class="card">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Hide watched videos by default</div>
+          <div class="setting-desc">Hides videos with 90%+ red progress bar on playlist load.</div>
+        </div>
+        <input type="checkbox" id="default-hide-watched" checked>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Default playlist sort</div>
+          <div class="setting-desc">Sort order applied when opening a playlist.</div>
+        </div>
+        <select id="default-sort">
+          <option value="default">YouTube order (default)</option>
+          <option value="shortest">Shortest first</option>
+          <option value="longest">Longest first</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="setting-title" style="margin-bottom: 6px;">Support Playlist Lens</div>
+      <div class="setting-desc" style="margin-bottom: 12px;">Playlist Lens is 100% free, private, and runs entirely in your browser with no accounts, trackers, or servers.</div>
+      <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer" class="btn btn-kofi">Support on Ko-fi</a>
+    </div>
+
+    <div id="save-status">Settings saved.</div>
+
+    <footer>
+      <div>Playlist Lens v1.0.0 • Made by jju1s</div>
+      <div>Unofficial extension, not affiliated with YouTube or Google LLC.</div>
+    </footer>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
