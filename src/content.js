@@ -400,8 +400,13 @@
     budgetInput.addEventListener('input', e => {
       state.budgetMinutes = e.target.value.trim();
       saveSettings();
-      trackAction();
       updateView();
+    });
+
+    // Count a budget as used once it is committed (Enter, blur or the spinner), not per keystroke,
+    // so typing "30" is one use toward the support card, not two.
+    budgetInput.addEventListener('change', () => {
+      if (state.budgetMinutes !== '') trackAction();
     });
 
     const updateSortChips = choice => {
