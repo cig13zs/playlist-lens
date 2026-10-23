@@ -16,15 +16,28 @@ const storeDir = path.join(root, 'store');
 fs.mkdirSync(screenshotsDir, { recursive: true });
 fs.mkdirSync(storeDir, { recursive: true });
 
-const syntheticHtml = fs.readFileSync(path.join(root, 'tests', 'fixtures', 'playlist-synthetic.html'), 'utf8');
-const under100Html = fs.readFileSync(path.join(root, 'tests', 'fixtures', 'playlist-under-100.html'), 'utf8');
-const over100Html = fs.readFileSync(path.join(root, 'tests', 'fixtures', 'playlist-over-100.html'), 'utf8');
+// The two real playlist fixtures are not committed (they copy other people's playlists), so their
+// steps are skipped when the files are missing. PLAYLIST_LENS_OFFLINE=1 skips the live YouTube steps.
+function readFixture(name) {
+  const file = path.join(root, 'tests', 'fixtures', name);
+  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+}
+const syntheticHtml = readFixture('playlist-synthetic.html');
+const under100Html = readFixture('playlist-under-100.html');
+const over100Html = readFixture('playlist-over-100.html');
+const offline = process.env.PLAYLIST_LENS_OFFLINE === '1';
 
 const extensionErrors = [];
 let passed = 0;
 let failed = 0;
+let skipped = 0;
 
-async function step(name, fn) {
+async function step(name, fn, skipReason = null) {
+  if (skipReason) {
+    skipped++;
+    console.log(`skip ${name} (${skipReason})`);
+    return;
+  }
   try {
     await fn();
     passed++;
@@ -43,24 +56,26 @@ async function launchBrowser(options = {}) {
     ...(options.args || []),
   ];
 
-  let channel = process.env.PLAYLIST_LENS_CHANNEL || 'msedge';
+  // Installed Edge or Chrome first, then Playwright's own Chromium.
+  const channels = process.env.PLAYLIST_LENS_CHANNEL
+    ? [process.env.PLAYLIST_LENS_CHANNEL]
+    : ['msedge', 'chrome', 'chromium'];
   let context;
-  try {
-    context = await chromium.launchPersistentContext('', {
-      channel,
-      args,
-      viewport: { width: 1280, height: 800 },
-      ...options,
-    });
-  } catch (err) {
-    channel = 'chrome';
-    context = await chromium.launchPersistentContext('', {
-      channel,
-      args,
-      viewport: { width: 1280, height: 800 },
-      ...options,
-    });
+  let lastError;
+  for (const channel of channels) {
+    try {
+      context = await chromium.launchPersistentContext('', {
+        channel,
+        args,
+        viewport: { width: 1280, height: 800 },
+        ...options,
+      });
+      break;
+    } catch (err) {
+      lastError = err;
+    }
   }
+  if (!context) throw lastError;
 
   context.setDefaultTimeout(10000);
   context.setDefaultNavigationTimeout(25000);
@@ -118,12 +133,12 @@ async function main() {
     });
   });
 
-  // Intercept under-100 fixture
+  // Intercept under-100 fixture (route is harmless when the file is missing; its step is skipped)
   await context.route('https://www.youtube.com/playlist?list=PL_UNDER_100', route => {
     return route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: under100Html,
+      body: under100Html || '',
     });
   });
 
@@ -132,7 +147,7 @@ async function main() {
     return route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: over100Html,
+      body: over100Html || '',
     });
   });
 
@@ -432,7 +447,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
 
     await verify30MinBudgetAndReset(page, 'under-100 fixture');
     await page.screenshot({ path: path.join(screenshotsDir, '4-under100-fixture.png') });
-  });
+  }, under100Html ? null : 'no playlist-under-100.html fixture');
 
   // Step 7: Over-100 real fixture (182 videos)
   await step('over-100 fixture: displays honest completeness and verifies 30 min budget layout', async () => {
@@ -444,7 +459,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
 
     await verify30MinBudgetAndReset(page, 'over-100 fixture');
     await page.screenshot({ path: path.join(screenshotsDir, '5-over100-fixture.png') });
-  });
+  }, over100Html ? null : 'no playlist-over-100.html fixture');
 
   // Step 8: Live YouTube playlist
   await step('live YouTube playlist: loads public playlist, verifies bar and 30 min budget layout', async () => {
@@ -469,7 +484,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     await verify30MinBudgetAndReset(page, 'live playlist', async () => {
       await page.screenshot({ path: path.join(screenshotsDir, '6-live-playlist.png') });
     });
-  });
+  }, offline ? 'PLAYLIST_LENS_OFFLINE=1' : null);
 
   // Step 9: Live YouTube playlist (150 to 600 videos) exercising "Load all"
   await step('live YouTube playlist (150-600 videos): exercises Load all, verifies completeness, top scroll, and 30 min budget layout', async () => {
@@ -624,7 +639,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     // Reset button restores page
     await page.locator('#pl-reset').click();
     await page.waitForTimeout(300);
-  });
+  }, offline ? 'PLAYLIST_LENS_OFFLINE=1' : null);
 
   // Step 10: Options page
   await step('options page: opens, shows defaults and Ko-fi link', async () => {
@@ -662,7 +677,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
 
   await context.close();
 
-  console.log(`\n${passed} passed, ${failed} failed\n`);
+  console.log(`\n${passed} passed, ${failed} failed, ${skipped} skipped\n`);
   if (failed > 0) process.exit(1);
 }
 
