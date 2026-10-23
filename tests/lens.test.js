@@ -282,3 +282,49 @@ test('evaluatePlaylist hides rows that miss the title filter and budgets only th
   assert.equal(none.stats.matchCount, null);
   assert.equal(none.videos.filter(v => v.visible).length, 4);
 });
+
+test('normalizeSpeed, atSpeed and formatSpeed', () => {
+  assert.equal(L.normalizeSpeed(1.5), 1.5);
+  assert.equal(L.normalizeSpeed('1.25'), 1.25);
+  assert.equal(L.normalizeSpeed(3), 1);
+  assert.equal(L.normalizeSpeed('fast'), 1);
+  assert.equal(L.normalizeSpeed(undefined), 1);
+  assert.equal(L.atSpeed(3600, 2), 1800);
+  assert.equal(L.atSpeed(600, 1.5), 400);
+  assert.equal(L.atSpeed(100, 1.75), 57);
+  assert.equal(L.atSpeed(null, 2), null);
+  assert.equal(L.formatSpeed(1.75), '1.75x');
+  assert.equal(L.formatSpeed(9), '1x');
+});
+
+test('evaluatePlaylist fits more video into the budget at higher speeds', () => {
+  const list = [
+    { id: 'a', title: 'a', durationText: '10:00' },
+    { id: 'b', title: 'b', durationText: '12:00' },
+    { id: 'c', title: 'c', durationText: '15:00' },
+    { id: 'd', title: 'd', durationText: '20:00', watchedPct: 50 },
+  ];
+
+  // 1x, 30 min: a (10) + d (10 left) = 20; b would make 32.
+  const normal = L.evaluatePlaylist(list, { budgetMinutes: '30' });
+  assert.equal(normal.stats.speed, 1);
+  assert.equal(normal.stats.fittedCount, 2);
+  assert.equal(normal.stats.fittedWatchSec, 20 * 60);
+
+  // 1.5x, 30 min holds 45 min of video: a + d + b = 32, adding c would be 47.
+  const faster = L.evaluatePlaylist(list, { budgetMinutes: '30', speed: 1.5 });
+  assert.equal(faster.stats.fittedCount, 3);
+  assert.equal(faster.stats.fittedSec, 32 * 60);
+  assert.equal(faster.stats.fittedWatchSec, 1280); // 21 m 20 s
+  assert.deepEqual(faster.videos.filter(v => v.visible).map(v => v.id).sort(), ['a', 'b', 'd']);
+
+  // 2x, 30 min holds 60 min: all four (47 min of video) fit in 23 m 30 s.
+  const double = L.evaluatePlaylist(list, { budgetMinutes: '30', speed: 2 });
+  assert.equal(double.stats.fittedCount, 4);
+  assert.equal(double.stats.fittedWatchSec, 1410);
+
+  // Totals: 47 min unwatched content, 23 m 30 s at 2x. Bad speeds fall back to 1x.
+  assert.equal(double.stats.unwatchedSec, 47 * 60);
+  assert.equal(double.stats.unwatchedWatchSec, 1410);
+  assert.equal(L.evaluatePlaylist(list, { speed: 4 }).stats.unwatchedWatchSec, 47 * 60);
+});
