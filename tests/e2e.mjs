@@ -401,6 +401,37 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     await page.waitForTimeout(200);
   });
 
+  // Step 4b: Title filter
+  await step('title filter: keeps matching titles, drops minus words, and turns off dragging', async () => {
+    const filter = page.locator('#pl-title-filter');
+    const visibleIds = () => page.locator('ytd-playlist-video-renderer').evaluateAll(rows =>
+      rows.filter(r => r.checkVisibility()).map(r => r.getAttribute('data-id')).sort());
+
+    await filter.fill('practice');
+    await page.waitForTimeout(200);
+    assert.deepEqual(await visibleIds(), ['vid-4', 'vid-7']);
+    assert.equal(await page.locator('#pl-filter-summary').textContent(), '2 of 8 match "practice"');
+
+    await filter.fill('practice -patterns');
+    await page.waitForTimeout(200);
+    assert.deepEqual(await visibleIds(), ['vid-4']);
+
+    // Combined with a budget, only matching videos are picked
+    await page.locator('#pl-budget-input').fill('60');
+    await page.waitForTimeout(200);
+    assert.match(await page.locator('#pl-budget-summary').textContent(), /^1 video fit in 60 min/);
+    await page.locator('#pl-budget-input').fill('');
+
+    await page.locator('.playlist-lens-chip[data-sort="default"]').click();
+    await page.waitForTimeout(200);
+    const dragOff = await page.locator('#contents').evaluate(el => el.classList.contains('playlist-lens-reorder-disabled'));
+    assert.ok(dragOff, 'dragging stays off while the title filter hides rows');
+
+    await filter.fill('practice');
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: path.join(screenshotsDir, '9-title-filter.png') });
+  });
+
   // Step 5: Reset action
   await step('reset button: restores native DOM order and clears filters', async () => {
     await page.locator('#pl-reset').click();
@@ -408,6 +439,8 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
 
     const budgetVal = await page.locator('#pl-budget-input').inputValue();
     assert.equal(budgetVal, '');
+    assert.equal(await page.locator('#pl-title-filter').inputValue(), '');
+    assert.equal(await page.locator('#pl-filter-summary').isVisible(), false);
 
     const isDefaultActive = await page.locator('.playlist-lens-chip[data-sort="default"]').evaluate(el => el.classList.contains('is-active'));
     assert.ok(isDefaultActive, 'Default chip should be active');

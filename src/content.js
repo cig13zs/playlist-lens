@@ -18,6 +18,10 @@
   let isLoadingAll = false;
   let isApplying = false;
 
+  // The title filter lives only in memory and only for the playlist it was typed on.
+  let titleQuery = '';
+  let titleQueryListId = null;
+
   let state = {
     budgetMinutes: '',
     hideWatched: true,
@@ -27,6 +31,14 @@
     seenCards: [],
     dismissedForever: false,
   };
+
+  function currentListId() {
+    try {
+      return new URL(window.location.href).searchParams.get('list');
+    } catch {
+      return null;
+    }
+  }
 
   function isPlaylistPage() {
     try {
@@ -116,7 +128,13 @@
   // Extract video data from DOM row
   function extractRowData(row, idx, container) {
     const itemEl = getItemElement(row, container);
-    const titleEl = row.querySelector(Selectors.TITLE);
+    // Try the title selectors in order: the thumbnail link also matches the generic
+    // watch?v= fallback and comes first in the row, but its text is the duration badge.
+    let titleEl = null;
+    for (const sel of Selectors.TITLE.split(',')) {
+      titleEl = row.querySelector(sel.trim());
+      if (titleEl) break;
+    }
     const title = titleEl ? titleEl.textContent.trim() : `Video ${idx + 1}`;
     let href = titleEl ? titleEl.getAttribute('href') : '';
     if (!href) {
@@ -199,17 +217,15 @@
         budgetMinutes: state.budgetMinutes,
         hideWatched: state.hideWatched,
         sortChoice: state.sortChoice,
+        query: titleQuery,
       });
 
-      // Apply to container
+      // Apply to container. Dragging is also off while a title filter hides rows, since a drag
+      // between the visible rows would save a reorder across the hidden ones.
       if (container) {
-        if (state.sortChoice !== 'default' || state.budgetMinutes !== '') {
-          container.classList.add('playlist-lens-container-active');
-          container.classList.add('playlist-lens-reorder-disabled');
-        } else {
-          container.classList.remove('playlist-lens-container-active');
-          container.classList.remove('playlist-lens-reorder-disabled');
-        }
+        const reordering = state.sortChoice !== 'default' || state.budgetMinutes !== '';
+        container.classList.toggle('playlist-lens-container-active', reordering);
+        container.classList.toggle('playlist-lens-reorder-disabled', reordering || stats.queryActive);
       }
 
       // Apply order and visibility per row
@@ -303,6 +319,11 @@
     completeness.id = 'pl-completeness';
     runtimeGroup.appendChild(completeness);
 
+    const filterSummary = document.createElement('div');
+    filterSummary.className = 'playlist-lens-filter-summary';
+    filterSummary.id = 'pl-filter-summary';
+    runtimeGroup.appendChild(filterSummary);
+
     const budgetSummary = document.createElement('div');
     budgetSummary.className = 'playlist-lens-budget-summary';
     budgetSummary.id = 'pl-budget-summary';
@@ -313,6 +334,24 @@
     // Right: controls
     const controls = document.createElement('div');
     controls.className = 'playlist-lens-controls';
+
+    // Title filter: words to keep, -word to drop
+    const searchBox = document.createElement('div');
+    searchBox.className = 'playlist-lens-budget-box playlist-lens-search-box';
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'search';
+    searchInput.id = 'pl-title-filter';
+    searchInput.className = 'playlist-lens-input playlist-lens-search-input';
+    searchInput.placeholder = 'Filter titles';
+    searchInput.autocomplete = 'off';
+    searchInput.spellcheck = false;
+    searchInput.value = titleQuery;
+    searchInput.title = 'Show only videos whose title has every word. Put - before a word to hide it.';
+    searchInput.setAttribute('aria-label', 'Filter videos by title');
+
+    searchBox.appendChild(searchInput);
+    controls.appendChild(searchBox);
 
     // Minutes input box: "I have __ min"
     const budgetBox = document.createElement('div');
@@ -424,6 +463,12 @@
       updateView();
     });
 
+    searchInput.addEventListener('input', e => {
+      titleQuery = e.target.value;
+      titleQueryListId = currentListId();
+      updateView();
+    });
+
     loadAllBtn.addEventListener('click', () => {
       runLoadAll();
     });
@@ -433,6 +478,8 @@
       state.sortChoice = 'default';
       state.hideWatched = false;
       budgetInput.value = '';
+      titleQuery = '';
+      searchInput.value = '';
       toggleCheckbox.checked = false;
       chipDefault.classList.add('is-active');
       chipShortest.classList.remove('is-active');
@@ -475,6 +522,7 @@
     const runtimeEl = bar.querySelector('#pl-runtime-header');
     const compEl = bar.querySelector('#pl-completeness');
     const budgetEl = bar.querySelector('#pl-budget-summary');
+    const filterEl = bar.querySelector('#pl-filter-summary');
     const loadAllBtn = bar.querySelector('#pl-load-all');
 
     if (runtimeEl) {
@@ -491,7 +539,7 @@
     if (compEl) {
       if (headerTotal !== null) {
         let msg = `Loaded ${stats.totalVideos} of ${headerTotal}`;
-        if (isPartial && (state.budgetMinutes !== '' || state.sortChoice !== 'default')) {
+        if (isPartial && (state.budgetMinutes !== '' || state.sortChoice !== 'default' || stats.queryActive)) {
           msg += ` • based on ${stats.totalVideos} of ${headerTotal}`;
         }
         compEl.textContent = msg;
@@ -508,6 +556,16 @@
       } else {
         loadAllBtn.textContent = 'Load all';
         loadAllBtn.disabled = false;
+      }
+    }
+
+    if (filterEl) {
+      if (stats.queryActive) {
+        filterEl.textContent = `${stats.matchCount} of ${stats.totalVideos} match "${titleQuery.trim()}"`;
+        filterEl.style.display = 'block';
+      } else {
+        filterEl.textContent = '';
+        filterEl.style.display = 'none';
       }
     }
 
@@ -674,6 +732,13 @@
     if (!isPlaylistPage()) {
       teardown();
       return;
+    }
+
+    // A title filter belongs to the playlist it was typed on.
+    if (titleQuery && titleQueryListId !== currentListId()) {
+      titleQuery = '';
+      const searchInput = document.getElementById('pl-title-filter');
+      if (searchInput) searchInput.value = '';
     }
 
     loadSettings(() => {
