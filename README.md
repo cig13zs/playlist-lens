@@ -29,7 +29,7 @@ No account, no analytics and no network requests of its own. It asks for one per
 
 ## Development
 
-`node --test tests/` runs the unit tests for the parsers in `src/lib/`. `tests/e2e.mjs` loads the extension in Playwright against saved playlist pages; it expects `playlist-under-100.html` and `playlist-over-100.html` in `tests/fixtures/`, which aren't committed because they are copies of other people's playlists. Save any two public playlists there after the page has loaded.
+`node --test tests/` runs the unit tests for the parsers in `src/lib/`. `tests/e2e.mjs` loads the extension in Playwright against saved playlist pages and two live public playlists. The two real playlist fixtures, `playlist-under-100.html` and `playlist-over-100.html` in `tests/fixtures/`, aren't committed because they are copies of other people's playlists; save any two public playlists there after the page has loaded, or their steps are skipped. `PLAYLIST_LENS_OFFLINE=1` skips the live steps. The run uses installed Edge or Chrome, or Playwright's Chromium when neither is there.
 
 When YouTube changes its layout, the fix usually goes in `src/selectors.js`.
 
