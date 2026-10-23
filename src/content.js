@@ -26,6 +26,7 @@
     budgetMinutes: '',
     hideWatched: true,
     sortChoice: 'default', // 'default' | 'shortest' | 'longest'
+    speed: 1,
     useCount: 0,
     firstUseDate: null,
     seenCards: [],
@@ -218,6 +219,7 @@
         hideWatched: state.hideWatched,
         sortChoice: state.sortChoice,
         query: titleQuery,
+        speed: state.speed,
       });
 
       // Apply to container. Dragging is also off while a title filter hides rows, since a drag
@@ -380,6 +382,31 @@
     budgetBox.appendChild(budgetSuffix);
     controls.appendChild(budgetBox);
 
+    // Playback speed: the budget and unwatched total count real time at this speed
+    const speedBox = document.createElement('div');
+    speedBox.className = 'playlist-lens-budget-box';
+
+    const speedLabel = document.createElement('label');
+    speedLabel.setAttribute('for', 'pl-speed');
+    speedLabel.textContent = 'at';
+
+    const speedSelect = document.createElement('select');
+    speedSelect.id = 'pl-speed';
+    speedSelect.className = 'playlist-lens-select';
+    speedSelect.title = 'The speed you watch at. Faster speeds fit more videos into your minutes.';
+    speedSelect.setAttribute('aria-label', 'Playback speed');
+    for (const speed of Lib.SPEEDS) {
+      const option = document.createElement('option');
+      option.value = String(speed);
+      option.textContent = Lib.formatSpeed(speed);
+      speedSelect.appendChild(option);
+    }
+    speedSelect.value = String(Lib.normalizeSpeed(state.speed));
+
+    speedBox.appendChild(speedLabel);
+    speedBox.appendChild(speedSelect);
+    controls.appendChild(speedBox);
+
     // Sort chips: Default, Shortest, Longest
     const sortGroup = document.createElement('div');
     sortGroup.style.display = 'inline-flex';
@@ -469,6 +496,12 @@
       updateView();
     });
 
+    speedSelect.addEventListener('change', e => {
+      state.speed = Lib.normalizeSpeed(e.target.value);
+      saveSettings();
+      updateView();
+    });
+
     loadAllBtn.addEventListener('click', () => {
       runLoadAll();
     });
@@ -527,6 +560,9 @@
 
     if (runtimeEl) {
       let text = `${stats.totalVideos} video${stats.totalVideos === 1 ? '' : 's'}, ${Lib.formatRuntime(stats.totalSec)} total, ${Lib.formatRuntime(stats.unwatchedSec)} unwatched`;
+      if (stats.speed !== 1) {
+        text += ` (${Lib.formatRuntime(stats.unwatchedWatchSec)} at ${Lib.formatSpeed(stats.speed)})`;
+      }
       if (stats.noLengthCount > 0) {
         text += ` • ${stats.noLengthCount} without a length`;
       }
@@ -572,8 +608,9 @@
     if (budgetEl) {
       if (stats.budgetResult !== null) {
         const count = stats.budgetResult.count;
-        const totalFit = Lib.formatRuntime(stats.budgetResult.totalSec);
-        budgetEl.textContent = `${count} video${count === 1 ? '' : 's'} fit in ${state.budgetMinutes} min (${totalFit})`;
+        const totalFit = Lib.formatRuntime(stats.fittedWatchSec);
+        const speedNote = stats.speed !== 1 ? ` at ${Lib.formatSpeed(stats.speed)}` : '';
+        budgetEl.textContent = `${count} video${count === 1 ? '' : 's'} fit in ${state.budgetMinutes} min${speedNote} (${totalFit})`;
         budgetEl.style.display = 'block';
       } else {
         budgetEl.style.display = 'none';

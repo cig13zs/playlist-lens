@@ -432,6 +432,25 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     await page.screenshot({ path: path.join(screenshotsDir, '9-title-filter.png') });
   });
 
+  // Step 4c: Playback speed
+  await step('playback speed: 30 min at 2x fits more videos and halves the unwatched total', async () => {
+    await page.locator('#pl-title-filter').fill('');
+    await page.locator('#pl-budget-input').fill('30');
+    await page.locator('#pl-speed').selectOption('2');
+    await page.waitForTimeout(200);
+
+    // 60 min of video: 5 + 10 + 15 (left) + 15 = 45; the 25 min one would make 70.
+    assert.equal(await page.locator('#pl-budget-summary').textContent(), '4 videos fit in 30 min at 2x (22 m 30 s)');
+    assert.match(await page.locator('#pl-runtime-header').textContent(), /1 h 50 m unwatched \(55 m at 2x\)/);
+    assert.ok(await page.locator('ytd-playlist-video-renderer[data-id="vid-5"]').isVisible());
+    await page.screenshot({ path: path.join(screenshotsDir, '10-speed-2x.png') });
+
+    await page.locator('#pl-speed').selectOption('1');
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('#pl-budget-summary').textContent(), '3 videos fit in 30 min (30 m)');
+    await page.locator('#pl-budget-input').fill('');
+  });
+
   // Step 5: Reset action
   await step('reset button: restores native DOM order and clears filters', async () => {
     await page.locator('#pl-reset').click();

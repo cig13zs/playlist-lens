@@ -152,6 +152,24 @@ html[dark], [dark] {
   font-weight: 400;
 }
 
+/* Playback speed select */
+.playlist-lens-select {
+  background: transparent;
+  border: none;
+  color: var(--pl-text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.playlist-lens-select option {
+  background-color: var(--pl-card-bg);
+  color: var(--pl-text-primary);
+}
+
 /* Chips and Buttons */
 .playlist-lens-chip,
 .playlist-lens-btn {
