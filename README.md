@@ -1,5 +1,7 @@
 # Playlist Lens
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/olpginhinkaacjcfncphknhnmignoimo?label=chrome%20web%20store)](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo)
+[![Tests](https://img.shields.io/github/actions/workflow/status/cig13zs/playlist-lens/test.yml?label=tests)](https://github.com/cig13zs/playlist-lens/actions)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/jju1s)
 
 A browser extension that adds a bar above any YouTube playlist, Watch Later and Liked videos included, and answers one question: what can I watch in the time I have?
@@ -16,7 +18,9 @@ Rows are reordered and hidden in place, so YouTube's own thumbnails, menus and l
 
 ## Install
 
-Chrome Web Store listing coming soon. Until then, load it unpacked:
+Get it from the [Chrome Web Store](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo). It works in Chrome, Edge and Brave.
+
+To build it yourself, or for Firefox:
 
 1. Clone this repo and run `node build.mjs` (Node 20 or newer, no dependencies).
 2. Open `chrome://extensions`, turn on Developer mode, click Load unpacked and pick `dist/chrome`.
