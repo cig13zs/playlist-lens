@@ -1,6 +1,6 @@
 # Privacy policy
 
-Playlist Lens, version 1.0.0. Last updated 2026-10-19.
+Playlist Lens, version 1.1.0. Last updated 2026-10-23.
 
 Playlist Lens is a browser extension that runs on www.youtube.com. It has no account, no server of its own, no analytics and no ads.
 
@@ -10,7 +10,7 @@ In your browser's local extension storage, on your device only: your last time b
 
 ## What it reads
 
-The playlist page you have open, so it can read each video's length and watched bar and sort or hide the rows. It doesn't store or record which videos or playlists you look at.
+The playlist page you have open, so it can read each video's title, length and watched bar and sort or hide the rows. It doesn't store or record which videos or playlists you look at. Words you type into Filter titles stay on the page and are not saved.
 
 ## What it sends
 

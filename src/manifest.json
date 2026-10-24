@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Playlist Lens: sort YouTube playlists by length and time",
   "short_name": "Playlist Lens",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Fit videos into the time you have. Sort YouTube playlists by duration, hide watched videos, and see honest unwatched totals.",
   "icons": {
     "16": "icons/icon16.png",

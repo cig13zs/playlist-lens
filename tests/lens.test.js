@@ -233,3 +233,52 @@ test('nextCard manages Ko-fi and Rating support milestones per BUILD-STANDARDS',
   // If dismissed forever: no cards
   assert.equal(L.nextCard({ useCount: 50, firstUseDate: now, dismissedForever: true, seenCards: [] }, now + 10 * day, 'https://store.example/lens'), null);
 });
+
+test('parseQuery splits words, quoted phrases and minus words', () => {
+  assert.deepEqual(L.parseQuery(''), { include: [], exclude: [] });
+  assert.deepEqual(L.parseQuery('  React   Hooks '), { include: ['react', 'hooks'], exclude: [] });
+  assert.deepEqual(L.parseQuery('lecture -shorts'), { include: ['lecture'], exclude: ['shorts'] });
+  assert.deepEqual(L.parseQuery('"full course" -"part 2"'), { include: ['full course'], exclude: ['part 2'] });
+  assert.deepEqual(L.parseQuery('- -- ""'), { include: [], exclude: [] });
+});
+
+test('matchesQuery ignores case and accents and needs every word', () => {
+  assert.equal(L.matchesQuery('Anything at all', ''), true);
+  assert.equal(L.matchesQuery('Anything at all', '   '), true);
+  assert.equal(L.matchesQuery('React Hooks in 10 minutes', 'hooks react'), true);
+  assert.equal(L.matchesQuery('React Hooks in 10 minutes', 'react vue'), false);
+  assert.equal(L.matchesQuery('Café au lait', 'CAFE'), true);
+  assert.equal(L.matchesQuery('Lecture 3 #shorts', 'lecture -shorts'), false);
+  assert.equal(L.matchesQuery('Lecture 3', 'lecture -shorts'), true);
+  assert.equal(L.matchesQuery('A full course, part 2', '"full course" -"part 2"'), false);
+  assert.equal(L.matchesQuery(null, 'x'), false);
+});
+
+test('evaluatePlaylist hides rows that miss the title filter and budgets only the matches', () => {
+  const list = [
+    { id: 'a', title: 'Intro to Rust', durationText: '5:00' },
+    { id: 'b', title: 'Cooking pasta', durationText: '2:00' },
+    { id: 'c', title: 'Rust ownership', durationText: '20:00' },
+    { id: 'd', title: 'Rust traits', durationText: '9:00', watchedPct: 95 },
+    { id: 'e', title: 'Rust macros', durationText: '12:00' },
+  ];
+
+  const res = L.evaluatePlaylist(list, { hideWatched: true, query: 'rust' });
+  assert.equal(res.stats.queryActive, true);
+  assert.equal(res.stats.matchCount, 3); // a, c, e; d is a watched match
+  assert.equal(res.videos[1].visible, false);
+  assert.equal(res.videos[1].hiddenReason, 'query');
+  assert.equal(res.videos[3].hiddenReason, 'watched');
+  assert.deepEqual(res.videos.filter(v => v.visible).map(v => v.id), ['a', 'c', 'e']);
+
+  // 18 min budget: the 2 min pasta video would fit but doesn't match, so only a (5) + e (12) fit.
+  const budget = L.evaluatePlaylist(list, { hideWatched: true, query: 'rust', budgetMinutes: '18' });
+  assert.equal(budget.stats.fittedCount, 2);
+  assert.equal(budget.stats.fittedSec, 17 * 60);
+  assert.deepEqual(budget.videos.filter(v => v.visible).map(v => v.id), ['a', 'e']);
+
+  const none = L.evaluatePlaylist(list, { hideWatched: true, query: '' });
+  assert.equal(none.stats.queryActive, false);
+  assert.equal(none.stats.matchCount, null);
+  assert.equal(none.videos.filter(v => v.visible).length, 4);
+});

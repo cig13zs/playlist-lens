@@ -84,6 +84,11 @@ html[dark], [dark] {
   color: var(--pl-focus-ring);
 }
 
+.playlist-lens-filter-summary {
+  font-size: 12px;
+  color: var(--pl-text-secondary);
+}
+
 /* Right side: controls (minutes box, sort chips, toggle, load all, reset) */
 .playlist-lens-controls {
   display: flex;
@@ -133,6 +138,18 @@ html[dark], [dark] {
 
 .playlist-lens-input:focus {
   border-bottom-color: var(--pl-focus-ring);
+}
+
+/* Title filter box */
+.playlist-lens-search-input {
+  width: 128px;
+  text-align: left;
+  font-weight: 500;
+}
+
+.playlist-lens-search-input::placeholder {
+  color: var(--pl-text-secondary);
+  font-weight: 400;
 }
 
 /* Chips and Buttons */

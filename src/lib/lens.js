@@ -127,6 +127,40 @@
     return `${m}:${String(remSec).padStart(2, '0')}`;
   }
 
+  // Lowercase and drop accents so "cafe" finds "Café".
+  function foldText(str) {
+    return String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  // "react hooks -shorts" -> { include: ['react', 'hooks'], exclude: ['shorts'] }. A quoted phrase
+  // counts as one word. Bare dashes are ignored.
+  function parseQuery(query) {
+    const include = [];
+    const exclude = [];
+    const re = /(-?)"([^"]*)"|(\S+)/g;
+    let m;
+    while ((m = re.exec(foldText(query))) !== null) {
+      let negate = m[1] === '-';
+      let word = m[2] !== undefined ? m[2].trim() : m[3];
+      if (m[3] !== undefined && word.startsWith('-')) {
+        negate = true;
+        word = word.slice(1);
+      }
+      if (!word || /^-+$/.test(word)) continue;
+      (negate ? exclude : include).push(word);
+    }
+    return { include, exclude };
+  }
+
+  // True when the title has every included word and none of the excluded ones. A blank query
+  // matches everything.
+  function matchesQuery(title, query) {
+    const q = typeof query === 'string' ? parseQuery(query) : query;
+    if (!q || (!q.include.length && !q.exclude.length)) return true;
+    const t = foldText(title);
+    return q.include.every(w => t.includes(w)) && !q.exclude.some(w => t.includes(w));
+  }
+
   // Shortest first, include while running total fits budgetSec.
   // One video longer than the budget is excluded, not truncated.
   function pickForBudget(videos, budgetSec) {
@@ -171,7 +205,11 @@
       budgetMinutes = '',
       hideWatched = true,
       sortChoice = 'default', // 'default' | 'shortest' | 'longest'
+      query = '',
     } = options;
+
+    const parsedQuery = parseQuery(query);
+    const queryActive = parsedQuery.include.length > 0 || parsedQuery.exclude.length > 0;
 
     const budgetSec = budgetMinutes !== '' && !isNaN(Number(budgetMinutes))
       ? Math.max(0, Math.floor(Number(budgetMinutes) * 60))
@@ -208,10 +246,18 @@
         watchedPct,
         isWatched: watched,
         remainingSec: remSec,
+        matchesQuery: matchesQuery(v.title, parsedQuery),
       };
     });
 
-    const budgetResult = budgetSec !== null ? pickForBudget(enriched, budgetSec) : null;
+    // The budget only picks from videos that match the title filter.
+    const budgetResult = budgetSec !== null
+      ? pickForBudget(enriched.filter(v => v.matchesQuery), budgetSec)
+      : null;
+    // Matches still on screen before the budget, so hidden watched videos aren't counted.
+    const matchCount = queryActive
+      ? enriched.filter(v => v.matchesQuery && !(hideWatched && v.isWatched)).length
+      : null;
 
     // Determine visibility
     const evaluated = enriched.map(v => {
@@ -221,6 +267,9 @@
       if (hideWatched && v.isWatched) {
         visible = false;
         hiddenReason = 'watched';
+      } else if (!v.matchesQuery) {
+        visible = false;
+        hiddenReason = 'query';
       } else if (budgetResult !== null) {
         if (!budgetResult.pickedIds.has(v.id)) {
           visible = false;
@@ -282,6 +331,8 @@
         budgetResult,
         fittedCount: budgetResult ? budgetResult.count : null,
         fittedSec: budgetResult ? budgetResult.totalSec : null,
+        queryActive,
+        matchCount,
       },
     };
   }
@@ -327,6 +378,8 @@
     remaining,
     formatRuntime,
     formatDurationBadge,
+    parseQuery,
+    matchesQuery,
     pickForBudget,
     evaluatePlaylist,
     nextCard,
