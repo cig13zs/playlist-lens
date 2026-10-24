@@ -11,10 +11,30 @@
     budgetMinutes: '',
     hideWatched: true,
     sortChoice: 'default', // 'default' | 'shortest' | 'longest'
+    speed: 1,
     useCount: 0,
     firstUseDate: null,
     seenCards: [], // ['kofi', 'rating']
   });
+
+  // Playback speeds offered in the bar, matching YouTube's common steps up to 2x.
+  const SPEEDS = Object.freeze([1, 1.25, 1.5, 1.75, 2]);
+
+  function normalizeSpeed(value) {
+    const n = Number(value);
+    return SPEEDS.includes(n) ? n : 1;
+  }
+
+  // Seconds of real time a stretch of video takes at a playback speed.
+  function atSpeed(sec, speed) {
+    if (sec === null || sec === undefined) return null;
+    return Math.round(sec / normalizeSpeed(speed));
+  }
+
+  // "1.5x", "2x"
+  function formatSpeed(speed) {
+    return `${normalizeSpeed(speed)}x`;
+  }
 
   // Localized digits (Arabic, Bengali, Devanagari, etc.) are out of scope.
   // Standard ASCII digits 0-9 with colon separation are expected from YouTube time badges.
@@ -207,12 +227,14 @@
       sortChoice = 'default', // 'default' | 'shortest' | 'longest'
       query = '',
     } = options;
+    const speed = normalizeSpeed(options.speed);
 
     const parsedQuery = parseQuery(query);
     const queryActive = parsedQuery.include.length > 0 || parsedQuery.exclude.length > 0;
 
+    // The budget is real minutes; at 1.5x, 30 minutes holds 45 minutes of video.
     const budgetSec = budgetMinutes !== '' && !isNaN(Number(budgetMinutes))
-      ? Math.max(0, Math.floor(Number(budgetMinutes) * 60))
+      ? Math.max(0, Math.floor(Number(budgetMinutes) * 60 * speed))
       : null;
 
     let totalSec = 0;
@@ -331,6 +353,9 @@
         budgetResult,
         fittedCount: budgetResult ? budgetResult.count : null,
         fittedSec: budgetResult ? budgetResult.totalSec : null,
+        speed,
+        unwatchedWatchSec: atSpeed(unwatchedSec, speed),
+        fittedWatchSec: budgetResult ? atSpeed(budgetResult.totalSec, speed) : null,
         queryActive,
         matchCount,
       },
@@ -370,6 +395,10 @@
     KOFI_URL,
     STORE_URL,
     DEFAULTS,
+    SPEEDS,
+    normalizeSpeed,
+    atSpeed,
+    formatSpeed,
     parseDuration,
     parseCount,
     parseLoadedAndTotal,

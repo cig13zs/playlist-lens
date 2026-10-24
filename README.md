@@ -12,6 +12,8 @@ Type the minutes you have and only the videos that fit stay on screen, shortest 
 
 Filter titles keeps only the videos whose title has every word you type, and a word with a minus in front (`-shorts`) hides the ones that have it. It works with the time budget, so "react" and 30 minutes gives you the React videos that fit.
 
+If you watch faster than 1x, set the speed next to the minutes box. At 1.5x, 30 minutes holds 45 minutes of video, and the header shows the unwatched total at that speed too.
+
 The bar also shows the playlist's video count, total runtime and unwatched runtime. Videos YouTube marks as watched (progress bar at 90% or more) are hidden by default, and partly watched ones count only the time they have left.
 
 YouTube loads long playlists 100 videos at a time, so the bar says how many it has ("Loaded 100 of 312") and marks a sort that only covers part of the list. Load all scrolls the list for you, up to 2,000 videos.

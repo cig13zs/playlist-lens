@@ -6,7 +6,7 @@ Playlist Lens is a browser extension that runs on www.youtube.com. It has no acc
 
 ## What it saves
 
-In your browser's local extension storage, on your device only: your last time budget, the hide-watched setting, your sort choice, whether you dismissed the support and rating cards, a count of how often you used a budget or sort, and the date you first used it. Uninstalling the extension deletes all of it.
+In your browser's local extension storage, on your device only: your last time budget, the hide-watched setting, your sort choice, your playback speed, whether you dismissed the support and rating cards, a count of how often you used a budget or sort, and the date you first used it. Uninstalling the extension deletes all of it.
 
 ## What it reads
 
