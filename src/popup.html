@@ -57,10 +57,10 @@
       font-size: 12px;
       color: var(--text-muted);
     }
-    .notice {
-      color: #c00;
-      font-weight: 500;
-      display: none;
+    .version-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
     }
     .footer {
       border-top: 1px solid var(--border);
@@ -80,19 +80,20 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="title">Playlist Lens</div>
-  </div>
+  <main>
+    <div class="header">
+      <div class="title">Playlist Lens <span class="version-tag" id="popup-version">v1.2.0</span></div>
+    </div>
 
-  <div class="status-box">
-    <div id="status-text">Playlist Lens bar appears directly above video rows on YouTube playlist pages (Watch Later, Liked videos, and public playlists).</div>
-    <div id="status-notice" class="notice">Couldn't read the page, update pending.</div>
-  </div>
+    <div class="status-box" role="status">
+      <p id="status-text" style="margin: 0;">Open a YouTube playlist (Watch Later, Liked videos, or any <code>list=</code> URL). The bar appears above the video rows.</p>
+    </div>
 
-  <div class="footer">
-    <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer">Support on Ko-fi</a>
-    <a href="#" id="open-options">Options</a>
-  </div>
+    <nav class="footer" aria-label="Playlist Lens links">
+      <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer">Support on Ko-fi</a>
+      <a href="#" id="open-options">Options</a>
+    </nav>
+  </main>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -161,7 +161,7 @@
           <div class="setting-title">Hide watched videos by default</div>
           <div class="setting-desc">Hides videos with 90%+ red progress bar on playlist load.</div>
         </div>
-        <input type="checkbox" id="default-hide-watched" checked>
+        <input type="checkbox" id="default-hide-watched" checked aria-label="Hide watched videos by default">
       </div>
 
       <div class="setting-row">
@@ -169,13 +169,29 @@
           <div class="setting-title">Default playlist sort</div>
           <div class="setting-desc">Sort order applied when opening a playlist.</div>
         </div>
-        <select id="default-sort">
+        <select id="default-sort" aria-label="Default playlist sort">
           <option value="default">YouTube order (default)</option>
           <option value="shortest">Shortest first</option>
           <option value="longest">Longest first</option>
         </select>
       </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Default playback speed</div>
+          <div class="setting-desc">Used for time-budget math on new playlist visits.</div>
+        </div>
+        <select id="default-speed" aria-label="Default playback speed">
+          <option value="1">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="1.75">1.75x</option>
+          <option value="2">2x</option>
+        </select>
+      </div>
     </div>
+
+    <p id="sync-hint" class="setting-desc" hidden>Defaults sync across signed-in Chrome browsers via your Google account (chrome.storage.sync). Title filters stay on the page only.</p>
 
     <div class="card">
       <div class="setting-title" style="margin-bottom: 6px;">Support Playlist Lens</div>
@@ -186,10 +202,11 @@
     <div id="save-status">Settings saved.</div>
 
     <footer>
-      <div>Playlist Lens v1.0.0 • Made by jju1s</div>
+      <div>Playlist Lens v<span id="app-version">1.2.0</span> • Made by jju1s</div>
       <div>Unofficial extension, not affiliated with YouTube or Google LLC.</div>
     </footer>
   </div>
+  <script src="lib/lens.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

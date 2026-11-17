@@ -1,14 +1,16 @@
 {
   "name": "playlist-lens",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Fit videos into the time you have. Sort YouTube playlists by duration, hide watched videos, and see honest unwatched totals.",
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
+    "lint": "node scripts/lint.mjs",
     "test": "node --test tests/",
     "build": "node build.mjs",
-    "e2e": "node tests/e2e.mjs"
+    "e2e": "node tests/e2e.mjs",
+    "verify": "npm run lint && npm test && npm run build"
   },
   "devDependencies": {
     "playwright": "^1.50.0"

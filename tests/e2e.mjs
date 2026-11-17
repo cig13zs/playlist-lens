@@ -714,7 +714,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     const popupPage = await context.newPage();
     await popupPage.goto(`chrome-extension://${extId}/popup.html`);
     await popupPage.locator('.title').waitFor();
-    assert.equal(await popupPage.locator('.title').textContent(), 'Playlist Lens');
+    assert.match(await popupPage.locator('.title').textContent(), /^Playlist Lens v\d+\.\d+\.\d+$/);
     await popupPage.screenshot({ path: path.join(screenshotsDir, '7-popup.png') });
     await popupPage.close();
   });

@@ -1,44 +1,78 @@
 # Playlist Lens
 
+**Fit YouTube playlists into the time you actually have** — sort by duration, hide watched videos, filter titles, and see honest unwatched totals. Private, offline, no analytics.
+
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/olpginhinkaacjcfncphknhnmignoimo?label=chrome%20web%20store)](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo)
-[![Tests](https://img.shields.io/github/actions/workflow/status/cig13zs/playlist-lens/test.yml?label=tests)](https://github.com/cig13zs/playlist-lens/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/cig13zs/playlist-lens/ci.yml?label=ci)](https://github.com/cig13zs/playlist-lens/actions)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/jju1s)
-
-A browser extension that adds a bar above any YouTube playlist, Watch Later and Liked videos included, and answers one question: what can I watch in the time I have?
-
-![A Watch Later list filtered to a 30 minute budget](store/1-watch-later-30min-budget.png)
-
-Type the minutes you have and only the videos that fit stay on screen, shortest first, with a running total ("3 videos fit in 30 min"). A video longer than the budget is left out rather than cut short.
-
-Filter titles keeps only the videos whose title has every word you type, and a word with a minus in front (`-shorts`) hides the ones that have it. It works with the time budget, so "react" and 30 minutes gives you the React videos that fit.
-
-If you watch faster than 1x, set the speed next to the minutes box. At 1.5x, 30 minutes holds 45 minutes of video, and the header shows the unwatched total at that speed too.
-
-The bar also shows the playlist's video count, total runtime and unwatched runtime. Videos YouTube marks as watched (progress bar at 90% or more) are hidden by default, and partly watched ones count only the time they have left.
-
-YouTube loads long playlists 100 videos at a time, so the bar says how many it has ("Loaded 100 of 312") and marks a sort that only covers part of the list. Load all scrolls the list for you, up to 2,000 videos.
-
-Rows are reordered and hidden in place, so YouTube's own thumbnails, menus and links keep working. Drag-to-reorder is turned off while a sort is on, so you can't save an accidental reorder of your own playlist. Reset puts everything back.
 
 ## Install
 
-Get it from the [Chrome Web Store](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo). It works in Chrome, Edge and Brave.
+**[Playlist Lens on the Chrome Web Store](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo)** — works in Chrome, Edge, and Brave.
 
-To build it yourself, or for Firefox:
+## Features
 
-1. Clone this repo and run `node build.mjs` (Node 20 or newer, no dependencies).
-2. Open `chrome://extensions`, turn on Developer mode, click Load unpacked and pick `dist/chrome`.
+- **Time budget** — Enter minutes you have; only videos that fit stay visible, shortest first, with a running total (e.g. “3 videos fit in 30 min”). A single video longer than the budget is excluded, not truncated.
+- **Title filter** — Keep videos whose titles contain every word you type; prefix a word with `-` to exclude it (e.g. `lecture -shorts`). Works with the time budget.
+- **Playback speed** — Set 1x–2x next to the minutes box. At 1.5x, 30 minutes holds 45 minutes of video; totals reflect watch time at that speed.
+- **Runtime header** — Video count, total runtime, unwatched runtime, and count of items without a length (live, premiere, etc.).
+- **Hide watched** — Videos with ≥90% watch progress are hidden by default; partial watches count remaining time only.
+- **Sort** — Default YouTube order, shortest first, or longest first (in-page reorder via CSS; drag-to-reorder is disabled while sorting/filtering).
+- **Load all** — Scrolls long playlists until YouTube stops loading or 2,000 videos, with honest “Loaded N of M” messaging.
+- **Reset** — Restores native order, visibility, and controls.
 
-For Firefox, open `about:debugging#/runtime/this-firefox`, click Load Temporary Add-on and pick `dist/firefox/manifest.json`.
+![Watch Later list filtered to a 30 minute budget](store/1-watch-later-30min-budget.png)
+
+![Shortest-first sort](store/2-shortest-first-sort.png)
+
+![Hide watched toggle](store/3-hide-watched-toggle.png)
+
+![Options page](store/4-options-page.png)
+
+## Permissions
+
+| Permission | Why |
+|------------|-----|
+| `storage` | Remember your budget, sort, hide-watched, speed, and dismissed cards on your device. Uses `chrome.storage.local` and, for defaults, `chrome.storage.sync` across signed-in Chrome browsers. No data is sent to Playlist Lens servers — there are none. |
+
+**Host access:** The extension only injects a content script on `https://www.youtube.com/*` (declared in `content_scripts.matches`). It does not request broad `<all_urls>` access.
 
 ## Privacy
 
-No account, no analytics and no network requests of its own. It asks for one permission, `storage`, to remember your budget, sort and hide-watched setting on your device. Full policy: [PRIVACY.md](PRIVACY.md).
+No account, no analytics, no extension-initiated network requests. Filter-by-title text stays in memory on the page and is not saved. Ko-fi and Web Store rating links open only when you click them. Details: [PRIVACY.md](PRIVACY.md).
 
-## Development
+## Build and test
 
-`node --test tests/` runs the unit tests for the parsers in `src/lib/`. `tests/e2e.mjs` loads the extension in Playwright against saved playlist pages and two live public playlists. The two real playlist fixtures, `playlist-under-100.html` and `playlist-over-100.html` in `tests/fixtures/`, aren't committed because they are copies of other people's playlists; save any two public playlists there after the page has loaded, or their steps are skipped. `PLAYLIST_LENS_OFFLINE=1` skips the live steps. The run uses installed Edge or Chrome, or Playwright's Chromium when neither is there.
+Requirements: **Node.js 20+**.
 
-When YouTube changes its layout, the fix usually goes in `src/selectors.js`.
+```bash
+npm ci
+npm run verify          # lint + unit tests + build (zip artifacts in dist/)
+npm test                # unit tests only (src/lib/lens.js)
+npm run build           # dist/chrome, dist/firefox, and versioned .zip files
+npx playwright install chromium   # first time only, for e2e
+PLAYLIST_LENS_OFFLINE=1 npm run e2e   # Playwright smoke tests + screenshots
+```
 
-Unofficial, not affiliated with YouTube. MIT licence.
+Optional real-playlist e2e (needs network): `npm run e2e` without `PLAYLIST_LENS_OFFLINE=1`. Fixtures `tests/fixtures/playlist-under-100.html` and `playlist-over-100.html` are optional local saves of public playlists.
+
+Load unpacked: `chrome://extensions` → Developer mode → **Load unpacked** → `dist/chrome`.
+
+When YouTube changes layout, update selectors in [`src/selectors.js`](src/selectors.js).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
+## Contributing
+
+Issues and PRs are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md) (private advisory, not public issues).
+
+## License
+
+MIT — see [LICENSE](LICENSE). Unofficial; not affiliated with YouTube or Google LLC.
+
+## More tools by the same author
+
+Other projects from [cig13zs on GitHub](https://github.com/cig13zs).

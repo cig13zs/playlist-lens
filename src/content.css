@@ -304,6 +304,24 @@ html[dark], [dark] {
   text-decoration: underline;
 }
 
+/* First-run tip */
+.playlist-lens-first-run {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--pl-text-secondary);
+  background-color: var(--pl-chip-bg);
+  border: 1px dashed var(--pl-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.playlist-lens-first-run[hidden] {
+  display: none !important;
+}
+
 /* Fallback Notice when page rows cannot be parsed */
 .playlist-lens-notice {
   padding: 8px 12px;

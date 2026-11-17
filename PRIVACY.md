@@ -1,21 +1,29 @@
 # Privacy policy
 
-Playlist Lens, version 1.1.0. Last updated 2026-10-23.
+Playlist Lens, version 1.2.0. Last updated 2026-11-17.
 
-Playlist Lens is a browser extension that runs on www.youtube.com. It has no account, no server of its own, no analytics and no ads.
+Playlist Lens runs on `www.youtube.com` playlist pages. It has no account, no server, no analytics, and no ads.
 
 ## What it saves
 
-In your browser's local extension storage, on your device only: your last time budget, the hide-watched setting, your sort choice, your playback speed, whether you dismissed the support and rating cards, a count of how often you used a budget or sort, and the date you first used it. Uninstalling the extension deletes all of it.
+On your device, using Chrome’s extension storage:
+
+- Time budget, hide-watched setting, sort choice, playback speed
+- Whether you dismissed support/rating cards or the first-run tip
+- How often you applied a budget or sort, and the date you first used the extension
+
+**Local vs sync:** Most settings are stored in `chrome.storage.local`. Defaults (sort, hide watched, speed) are also written to `chrome.storage.sync` when available, so signed-in Chrome can sync them across your browsers. Google operates sync; Playlist Lens does not see your Google account.
+
+Uninstalling the extension removes local data. Synced copies follow Chrome’s sync deletion rules.
 
 ## What it reads
 
-The playlist page you have open, so it can read each video's title, length and watched bar and sort or hide the rows. It doesn't store or record which videos or playlists you look at. Words you type into Filter titles stay on the page and are not saved.
+Only the open playlist page: video titles, duration badges, and watch-progress bars, to sort, filter, or hide rows. Playlist URLs and filter text are not logged or transmitted. **Filter titles** text stays in page memory for that visit (and playlist id) only.
 
 ## What it sends
 
-Nothing. The extension makes no network requests. Anything your browser loads on YouTube is YouTube's own page doing it. The Ko-fi and store rating links open only when you click them.
+Nothing. The extension makes no network requests. Ko-fi and store rating links load only when you click them.
 
 ## Contact
 
-Questions go to [GitHub issues](https://github.com/cig13zs/playlist-lens/issues).
+Questions: [GitHub issues](https://github.com/cig13zs/playlist-lens/issues) (not for security reports — see [SECURITY.md](SECURITY.md)).

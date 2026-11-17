@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an improvement that fits a private, offline playlist tool
+title: "[feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to do on a playlist?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: I understand Playlist Lens avoids analytics, new broad permissions, and remote code
+          required: true

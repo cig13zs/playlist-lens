@@ -22,16 +22,7 @@
   let titleQuery = '';
   let titleQueryListId = null;
 
-  let state = {
-    budgetMinutes: '',
-    hideWatched: true,
-    sortChoice: 'default', // 'default' | 'shortest' | 'longest'
-    speed: 1,
-    useCount: 0,
-    firstUseDate: null,
-    seenCards: [],
-    dismissedForever: false,
-  };
+  let state = { ...Lib.DEFAULTS, dismissedForever: false };
 
   function currentListId() {
     try {
@@ -50,27 +41,43 @@
     }
   }
 
-  // Safe storage helper with chrome.storage.local
+  function clearElement(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  // Local storage wins over sync when both exist (per-device title filter stays in memory only).
   function loadSettings(cb) {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get([STORAGE_KEY], result => {
-        if (result && result[STORAGE_KEY]) {
-          state = { ...state, ...result[STORAGE_KEY] };
-        }
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) {
+      if (cb) cb();
+      return;
+    }
+    chrome.storage.local.get([STORAGE_KEY], localResult => {
+      const apply = raw => {
+        state = { ...state, ...Lib.sanitizeSettings(raw) };
         if (!state.firstUseDate) {
           state.firstUseDate = Date.now();
           saveSettings();
         }
         if (cb) cb();
-      });
-    } else {
-      if (cb) cb();
-    }
+      };
+      const localSettings = localResult[STORAGE_KEY];
+      if (chrome.storage.sync) {
+        chrome.storage.sync.get([STORAGE_KEY], syncResult => {
+          apply({ ...syncResult[STORAGE_KEY], ...localSettings });
+        });
+      } else {
+        apply(localSettings);
+      }
+    });
   }
 
   function saveSettings() {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ [STORAGE_KEY]: state });
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+    const payload = Lib.sanitizeSettings(state);
+    state = { ...state, ...payload };
+    chrome.storage.local.set({ [STORAGE_KEY]: payload });
+    if (chrome.storage.sync) {
+      chrome.storage.sync.set({ [STORAGE_KEY]: payload });
     }
   }
 
@@ -284,6 +291,7 @@
       }
 
       renderBarUI(bar, stats);
+      renderFirstRunHint(bar);
     } catch (err) {
       console.error('[Playlist Lens] Error updating view:', err);
     } finally {
@@ -300,6 +308,7 @@
 
     bar = document.createElement('div');
     bar.id = 'playlist-lens-bar';
+    bar.tabIndex = -1;
     bar.setAttribute('role', 'region');
     bar.setAttribute('aria-label', 'Playlist Lens controls');
 
@@ -409,6 +418,8 @@
 
     // Sort chips: Default, Shortest, Longest
     const sortGroup = document.createElement('div');
+    sortGroup.setAttribute('role', 'group');
+    sortGroup.setAttribute('aria-label', 'Sort order');
     sortGroup.style.display = 'inline-flex';
     sortGroup.style.gap = '4px';
 
@@ -430,6 +441,7 @@
     toggleCheckbox.type = 'checkbox';
     toggleCheckbox.id = 'pl-hide-watched';
     toggleCheckbox.checked = state.hideWatched;
+    toggleCheckbox.setAttribute('aria-label', 'Hide watched videos');
 
     const toggleText = document.createElement('span');
     toggleText.textContent = 'Hide watched';
@@ -457,6 +469,23 @@
     topRow.appendChild(controls);
     bar.appendChild(topRow);
 
+    const hint = document.createElement('div');
+    hint.id = 'pl-first-run-hint';
+    hint.className = 'playlist-lens-first-run';
+    hint.setAttribute('role', 'note');
+    hint.hidden = true;
+    const hintText = document.createElement('span');
+    hintText.textContent =
+      'Tip: enter the minutes you have, pick a sort, or filter titles. Shortcuts: Alt+Shift+F focus filter, Alt+Shift+R reset.';
+    const hintDismiss = document.createElement('button');
+    hintDismiss.type = 'button';
+    hintDismiss.className = 'playlist-lens-btn-dismiss';
+    hintDismiss.textContent = 'Got it';
+    hintDismiss.setAttribute('aria-label', 'Dismiss first-run tip');
+    hint.appendChild(hintText);
+    hint.appendChild(hintDismiss);
+    bar.appendChild(hint);
+
     // Card container for support/rating asks
     const cardContainer = document.createElement('div');
     cardContainer.id = 'pl-card-container';
@@ -477,9 +506,9 @@
 
     const updateSortChips = choice => {
       state.sortChoice = choice;
-      chipDefault.classList.toggle('is-active', choice === 'default');
-      chipShortest.classList.toggle('is-active', choice === 'shortest');
-      chipLongest.classList.toggle('is-active', choice === 'longest');
+      setChipActive(chipDefault, choice === 'default');
+      setChipActive(chipShortest, choice === 'shortest');
+      setChipActive(chipLongest, choice === 'longest');
       saveSettings();
       trackAction();
       updateView();
@@ -511,7 +540,7 @@
       runLoadAll();
     });
 
-    resetBtn.addEventListener('click', () => {
+    const runReset = () => {
       state.budgetMinutes = '';
       state.sortChoice = 'default';
       state.hideWatched = false;
@@ -519,12 +548,34 @@
       titleQuery = '';
       searchInput.value = '';
       toggleCheckbox.checked = false;
-      chipDefault.classList.add('is-active');
-      chipShortest.classList.remove('is-active');
-      chipLongest.classList.remove('is-active');
+      speedSelect.value = '1';
+      state.speed = 1;
+      updateSortChips('default');
       saveSettings();
       restoreNativeRows();
       updateView();
+    };
+
+    resetBtn.addEventListener('click', runReset);
+
+    hintDismiss.addEventListener('click', () => {
+      state.dismissedFirstRunHint = true;
+      hint.hidden = true;
+      saveSettings();
+    });
+
+    bar.addEventListener('keydown', e => {
+      if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        const key = e.key.toLowerCase();
+        if (key === 'f') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        } else if (key === 'r') {
+          e.preventDefault();
+          runReset();
+        }
+      }
     });
 
     // Mount before video container
@@ -537,8 +588,14 @@
     btn.type = 'button';
     btn.className = `playlist-lens-chip ${isActive ? 'is-active' : ''}`;
     btn.setAttribute('data-sort', value);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     btn.textContent = text;
     return btn;
+  }
+
+  function setChipActive(chip, active) {
+    chip.classList.toggle('is-active', active);
+    chip.setAttribute('aria-pressed', active ? 'true' : 'false');
   }
 
   function renderNotice(bar, message) {
@@ -554,6 +611,12 @@
   function clearNotice(bar) {
     const notice = bar.querySelector('.playlist-lens-notice');
     if (notice) notice.remove();
+  }
+
+  function renderFirstRunHint(bar) {
+    const hint = bar.querySelector('#pl-first-run-hint');
+    if (!hint) return;
+    hint.hidden = state.dismissedFirstRunHint === true;
   }
 
   function renderBarUI(bar, stats) {
@@ -632,13 +695,13 @@
 
     const cardType = Lib.nextCard(state);
     if (!cardType) {
-      container.innerHTML = '';
+      clearElement(container);
       return;
     }
 
     // Don't re-render if already showing this card
     if (container.querySelector(`[data-card-type="${cardType}"]`)) return;
-    container.innerHTML = '';
+    clearElement(container);
 
     const card = document.createElement('div');
     card.className = 'playlist-lens-card';
