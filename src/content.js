@@ -320,6 +320,17 @@
     const runtimeGroup = document.createElement('div');
     runtimeGroup.className = 'playlist-lens-runtime-group';
 
+    const brand = document.createElement('div');
+    brand.className = 'playlist-lens-brand';
+    const mark = document.createElement('span');
+    mark.className = 'playlist-lens-mark';
+    mark.setAttribute('aria-hidden', 'true');
+    const brandName = document.createElement('span');
+    brandName.textContent = 'Playlist Lens';
+    brand.appendChild(mark);
+    brand.appendChild(brandName);
+    runtimeGroup.appendChild(brand);
+
     const runtimeHeader = document.createElement('div');
     runtimeHeader.className = 'playlist-lens-runtime-header';
     runtimeHeader.id = 'pl-runtime-header';
@@ -383,8 +394,8 @@
     budgetInput.setAttribute('aria-label', 'Time budget in minutes');
 
     const budgetSuffix = document.createElement('span');
+    budgetSuffix.className = 'playlist-lens-budget-suffix';
     budgetSuffix.textContent = 'min';
-    budgetSuffix.style.color = 'var(--pl-text-secondary)';
 
     budgetBox.appendChild(budgetLabel);
     budgetBox.appendChild(budgetInput);
@@ -418,10 +429,9 @@
 
     // Sort chips: Default, Shortest, Longest
     const sortGroup = document.createElement('div');
+    sortGroup.className = 'playlist-lens-segment';
     sortGroup.setAttribute('role', 'group');
     sortGroup.setAttribute('aria-label', 'Sort order');
-    sortGroup.style.display = 'inline-flex';
-    sortGroup.style.gap = '4px';
 
     const chipDefault = createChip('Default', 'default', state.sortChoice === 'default');
     const chipShortest = createChip('Shortest', 'shortest', state.sortChoice === 'shortest');
@@ -434,8 +444,7 @@
 
     // Hide watched toggle
     const toggleLabel = document.createElement('label');
-    toggleLabel.className = 'playlist-lens-chip playlist-lens-toggle-chip';
-    toggleLabel.style.cursor = 'pointer';
+    toggleLabel.className = 'playlist-lens-toggle-chip';
 
     const toggleCheckbox = document.createElement('input');
     toggleCheckbox.type = 'checkbox';
@@ -485,6 +494,13 @@
     hint.appendChild(hintText);
     hint.appendChild(hintDismiss);
     bar.appendChild(hint);
+
+    const empty = document.createElement('div');
+    empty.id = 'pl-empty';
+    empty.className = 'playlist-lens-empty';
+    empty.setAttribute('role', 'status');
+    empty.hidden = true;
+    bar.appendChild(empty);
 
     // Card container for support/rating asks
     const cardContainer = document.createElement('div');
@@ -687,6 +703,28 @@
     }
 
     renderSupportCards(bar);
+    renderEmpty(bar, stats);
+  }
+
+  function renderEmpty(bar, stats) {
+    const el = bar.querySelector('#pl-empty');
+    if (!el) return;
+    let message = '';
+    if (stats.budgetResult && stats.fittedCount === 0) {
+      message = 'Nothing fits in that time. Add minutes, or clear the title filter.';
+    } else if (stats.queryActive && stats.matchCount === 0) {
+      message = 'No titles match that filter.';
+    } else if (
+      state.hideWatched &&
+      !stats.queryActive &&
+      !stats.budgetResult &&
+      stats.unwatchedCount === 0 &&
+      stats.totalVideos > 0
+    ) {
+      message = 'Every loaded video is watched. Turn off Hide watched to see them.';
+    }
+    el.hidden = message === '';
+    el.textContent = message;
   }
 
   function renderSupportCards(bar) {

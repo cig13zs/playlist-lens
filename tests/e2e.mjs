@@ -336,6 +336,8 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     assert.equal(await badge3.textContent(), '15:00 left');
 
     await page.screenshot({ path: path.join(screenshotsDir, '1-synthetic-default-dark.png') });
+    await page.screenshot({ path: path.join(screenshotsDir, '11-first-run-hint.png') });
+    await page.locator('#pl-first-run-hint button').click();
   });
 
   // Step 2: Time budget filter
@@ -370,6 +372,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     const hasDisabledClass = await container.evaluate(el => el.classList.contains('playlist-lens-reorder-disabled'));
     assert.ok(hasDisabledClass, 'container should have playlist-lens-reorder-disabled');
 
+    await input.blur();
     // Capture primary store screenshot (30 min budget with visible running total per BUILD-PROMPT.md)
     await page.screenshot({ path: path.join(storeDir, '1-watch-later-30min-budget.png') });
 
@@ -464,6 +467,17 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     await page.waitForTimeout(200);
     assert.equal(await page.locator('#pl-budget-summary').textContent(), '3 videos fit in 30 min (30 m)');
     await page.locator('#pl-budget-input').fill('');
+  });
+
+  await step('empty budget: shows a clear empty state when nothing fits', async () => {
+    await page.locator('#pl-budget-input').fill('1');
+    await page.waitForTimeout(200);
+    const empty = page.locator('#pl-empty');
+    await empty.waitFor({ state: 'visible' });
+    assert.match(await empty.textContent(), /Nothing fits/);
+    await page.locator('#pl-budget-input').fill('');
+    await page.waitForTimeout(200);
+    assert.equal(await empty.isVisible(), false);
   });
 
   // Step 5: Reset action
@@ -701,7 +715,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     const optionsUrl = `chrome-extension://${extId}/options.html`;
     await optPage.goto(optionsUrl);
     await optPage.locator('h1').waitFor();
-    assert.equal(await optPage.locator('h1').textContent(), 'Playlist Lens Settings');
+    assert.equal(await optPage.locator('h1').textContent(), 'Playlist Lens');
     assert.ok(await optPage.locator('a[href*="ko-fi.com/jju1s"]').isVisible());
     await optPage.screenshot({ path: path.join(storeDir, '4-options-page.png') });
     await optPage.close();
@@ -712,6 +726,7 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     const extId = getExtId();
     assert.ok(extId, 'extId must be captured');
     const popupPage = await context.newPage();
+    await popupPage.setViewportSize({ width: 360, height: 240 });
     await popupPage.goto(`chrome-extension://${extId}/popup.html`);
     await popupPage.locator('.title').waitFor();
     assert.match(await popupPage.locator('.title').textContent(), /^Playlist Lens v\d+\.\d+\.\d+$/);

@@ -1,181 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="pl-app">
 <head>
   <meta charset="utf-8">
   <title>Playlist Lens Settings</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="design.css">
   <style>
-    :root {
-      --bg: #ffffff;
-      --card-bg: #f9f9f9;
-      --border: #e5e5e5;
-      --text: #0f0f0f;
-      --text-muted: #606060;
-      --primary: #065fd4;
-      --kofi: #ff5e5b;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f0f0f;
-        --card-bg: #1f1f1f;
-        --border: #383838;
-        --text: #f1f1f1;
-        --text-muted: #aaaaaa;
-        --primary: #3ea6ff;
-      }
-    }
     body {
-      font-family: var(--font);
-      background-color: var(--bg);
-      color: var(--text);
+      font-family: var(--pl-font);
+      background:
+        radial-gradient(480px 220px at 10% -10%, var(--pl-accent-soft), transparent 60%),
+        var(--pl-bg-page);
+      color: var(--pl-text);
       margin: 0;
-      padding: 32px 16px;
+      padding: var(--pl-space-6) var(--pl-space-4);
       display: flex;
       justify-content: center;
+      line-height: var(--pl-leading);
     }
-    .container {
-      max-width: 560px;
-      width: 100%;
+    .container { max-width: 560px; width: 100%; }
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: var(--pl-space-4);
+      margin-bottom: var(--pl-space-5);
     }
-    header {
-      margin-bottom: 24px;
-    }
+    .hero img { width: 56px; height: 56px; border-radius: 14px; box-shadow: var(--pl-shadow); }
     h1 {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 0 0 6px 0;
+      font-size: var(--pl-text-2xl);
+      font-weight: var(--pl-weight-bold);
+      letter-spacing: -0.03em;
+      margin: 0 0 4px;
     }
-    p.subtitle {
-      color: var(--text-muted);
-      font-size: 13px;
-      margin: 0;
-    }
+    p.subtitle { color: var(--pl-text-secondary); font-size: var(--pl-text-md); margin: 0; }
     .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      margin-bottom: 16px;
+      background: var(--pl-bg-elevated);
+      border: 1px solid var(--pl-border);
+      border-radius: var(--pl-radius-lg);
+      padding: var(--pl-space-4) var(--pl-space-4);
+      margin-bottom: var(--pl-space-4);
+      box-shadow: var(--pl-shadow);
     }
     .setting-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
+      gap: var(--pl-space-4);
+      padding: var(--pl-space-3) 0;
+      border-bottom: 1px solid var(--pl-border);
     }
-    .setting-row:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-    .setting-row:first-child {
-      padding-top: 0;
-    }
-    .setting-info {
-      padding-right: 16px;
-    }
-    .setting-title {
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 2px;
-    }
-    .setting-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    select, input[type="checkbox"] {
-      cursor: pointer;
-    }
+    .setting-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .setting-row:first-child { padding-top: 0; }
+    .setting-title { font-size: var(--pl-text-lg); font-weight: var(--pl-weight-medium); margin-bottom: 2px; }
+    .setting-desc { font-size: var(--pl-text-sm); color: var(--pl-text-secondary); }
     select {
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 10px;
+      background: var(--pl-surface);
+      color: var(--pl-text);
+      border: 1px solid var(--pl-border);
+      border-radius: var(--pl-radius-pill);
+      padding: 8px 12px;
       font-family: inherit;
-      font-size: 13px;
+      font-size: var(--pl-text-md);
+      cursor: pointer;
+      transition: border-color var(--pl-dur) var(--pl-ease), box-shadow var(--pl-dur) var(--pl-ease);
     }
-    input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--primary);
+    select:focus-visible {
+      outline: 2px solid var(--pl-focus);
+      outline-offset: 2px;
     }
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 26px;
+      flex: none;
+    }
+    .switch input {
+      appearance: none;
+      width: 44px;
+      height: 26px;
+      margin: 0;
+      border-radius: var(--pl-radius-pill);
+      background: #c8c8c8;
+      cursor: pointer;
+      transition: background-color var(--pl-dur) var(--pl-ease);
+    }
+    @media (prefers-color-scheme: dark) {
+      .switch input { background: #3f3f3f; }
+    }
+    .switch input::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px;
+      left: 3px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: transform var(--pl-dur) var(--pl-ease);
+    }
+    .switch input:checked { background: var(--pl-accent); }
+    .switch input:checked::before { transform: translateX(18px); background: var(--pl-on-accent); }
+    .switch input:focus-visible { outline: 2px solid var(--pl-focus); outline-offset: 2px; }
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
+      border-radius: var(--pl-radius-pill);
+      font-size: var(--pl-text-md);
+      font-weight: var(--pl-weight-bold);
       cursor: pointer;
       text-decoration: none;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      color: var(--text);
-    }
-    .btn:hover {
-      background: var(--border);
-    }
-    .btn-kofi {
-      background-color: var(--kofi);
-      color: #fff;
       border: none;
-    }
-    .btn-kofi:hover {
-      background-color: #e04e4b;
+      background: var(--pl-kofi);
       color: #fff;
+      transition: background-color var(--pl-dur) var(--pl-ease);
     }
+    .btn:hover { background: #e04e4b; color: #fff; }
+    .btn:focus-visible { outline: 2px solid var(--pl-focus); outline-offset: 2px; }
     footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: var(--text-muted);
+      margin-top: var(--pl-space-5);
+      font-size: var(--pl-text-sm);
+      color: var(--pl-text-secondary);
       line-height: 1.5;
     }
-    footer a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-    footer a:hover {
-      text-decoration: underline;
-    }
     #save-status {
-      font-size: 12px;
-      color: #2ba640;
-      margin-top: 8px;
+      font-size: var(--pl-text-sm);
+      color: var(--pl-success);
+      font-weight: var(--pl-weight-medium);
+      margin-top: var(--pl-space-2);
       display: none;
     }
+    #sync-hint { margin: 0 0 var(--pl-space-4); }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Playlist Lens Settings</h1>
-      <p class="subtitle">Default options for YouTube playlist duration filtering and sorting.</p>
+    <header class="hero">
+      <img src="icons/icon128.png" width="56" height="56" alt="">
+      <div>
+        <h1>Playlist Lens</h1>
+        <p class="subtitle">Defaults for the bar on YouTube playlists.</p>
+      </div>
     </header>
 
     <div class="card">
       <div class="setting-row">
         <div class="setting-info">
           <div class="setting-title">Hide watched videos by default</div>
-          <div class="setting-desc">Hides videos with 90%+ red progress bar on playlist load.</div>
+          <div class="setting-desc">Hides videos with a 90%+ progress bar when a playlist opens.</div>
         </div>
-        <input type="checkbox" id="default-hide-watched" checked aria-label="Hide watched videos by default">
+        <label class="switch">
+          <input type="checkbox" id="default-hide-watched" checked aria-label="Hide watched videos by default">
+        </label>
       </div>
-
       <div class="setting-row">
         <div class="setting-info">
           <div class="setting-title">Default playlist sort</div>
           <div class="setting-desc">Sort order applied when opening a playlist.</div>
         </div>
         <select id="default-sort" aria-label="Default playlist sort">
-          <option value="default">YouTube order (default)</option>
+          <option value="default">YouTube order</option>
           <option value="shortest">Shortest first</option>
           <option value="longest">Longest first</option>
         </select>
       </div>
-
       <div class="setting-row">
         <div class="setting-info">
           <div class="setting-title">Default playback speed</div>
@@ -191,18 +181,18 @@
       </div>
     </div>
 
-    <p id="sync-hint" class="setting-desc" hidden>Defaults sync across signed-in Chrome browsers via your Google account (chrome.storage.sync). Title filters stay on the page only.</p>
+    <p id="sync-hint" class="setting-desc" hidden>Defaults sync across signed-in Chrome browsers. Title filters stay on the page only.</p>
 
     <div class="card">
       <div class="setting-title" style="margin-bottom: 6px;">Support Playlist Lens</div>
-      <div class="setting-desc" style="margin-bottom: 12px;">Playlist Lens is 100% free, private, and runs entirely in your browser with no accounts, trackers, or servers.</div>
-      <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer" class="btn btn-kofi">Support on Ko-fi</a>
+      <div class="setting-desc" style="margin-bottom: 12px;">Free, private, and entirely in your browser. No accounts, trackers, or servers.</div>
+      <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer" class="btn">Support on Ko-fi</a>
     </div>
 
     <div id="save-status">Settings saved.</div>
 
     <footer>
-      <div>Playlist Lens v<span id="app-version">1.2.0</span> • Made by jju1s</div>
+      <div>Playlist Lens v<span id="app-version">1.2.0</span> · Made by jju1s</div>
       <div>Unofficial extension, not affiliated with YouTube or Google LLC.</div>
     </footer>
   </div>

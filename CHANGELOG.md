@@ -12,9 +12,11 @@
 - Reset also restores playback speed to 1x.
 
 ### UI
+- Design system (`design.css`): shared color, spacing, radius, and type scale. Light surfaces follow YouTube; dark follows `html[dark]` on YouTube and the OS theme in the popup and options.
+- In-page bar: brand mark, segmented sort control, switch for Hide watched, pill budget/speed fields, empty states when nothing fits or no titles match.
 - First-run tip on the playlist bar (dismissible, stored locally).
-- Options page shows the manifest version and default playback speed control.
-- Popup copy and layout refreshed; version tag in the header.
+- Options page and popup use the same tokens, icon, and motion (respects `prefers-reduced-motion`).
+- New toolbar icons and 440×280 store tile.
 
 ### Quality of life
 - Keyboard shortcuts on the bar: **Alt+Shift+F** focuses the title filter, **Alt+Shift+R** resets filters.

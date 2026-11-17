@@ -18,7 +18,7 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "js": ["lib/lens.js", "selectors.js", "content.js"],
-      "css": ["content.css"],
+      "css": ["design.css", "content.css"],
       "run_at": "document_idle"
     }
   ],

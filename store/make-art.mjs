@@ -1,5 +1,5 @@
-// Renders the toolbar icons and the 440x280 promo tile from inline SVG/HTML with Playwright.
-// Re-run only when the mark changes: node store/make-art.mjs
+// Renders toolbar icons and the 440×280 Chrome Web Store tile.
+// Re-run when the mark changes: node store/make-art.mjs
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -11,55 +11,51 @@ const storeDir = path.join(root, 'store');
 fs.mkdirSync(iconsDir, { recursive: true });
 fs.mkdirSync(storeDir, { recursive: true });
 
-const RED = '#c00';
-
-// A circular lens / stopwatch containing playlist bars: the Playlist Lens mark
-const mark = (size, rounded = true) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
-  ${rounded ? `<rect width="128" height="128" rx="28" fill="${RED}"/>` : ''}
-  <!-- Outer lens / clock ring -->
-  <circle cx="64" cy="64" r="46" fill="none" stroke="#ffffff" stroke-width="8"/>
-  <!-- Clock hand at top -->
-  <line x1="64" y1="28" x2="64" y2="40" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
-  <!-- Playlist bars inside the lens -->
-  <line x1="42" y1="52" x2="86" y2="52" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
-  <line x1="42" y1="64" x2="74" y2="64" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
-  <line x1="42" y1="76" x2="62" y2="76" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
-  <!-- Small stopwatch top knob -->
-  <rect x="58" y="10" width="12" height="8" rx="2" fill="#ffffff"/>
+const mark = (size) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a2418"/>
+      <stop offset="1" stop-color="#14110c"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#g)"/>
+  <circle cx="64" cy="64" r="40" fill="none" stroke="#f0c14b" stroke-width="7"/>
+  <rect x="38" y="46" width="52" height="8" rx="4" fill="#ffe7a3"/>
+  <rect x="46" y="60" width="36" height="8" rx="4" fill="#f0c14b"/>
+  <rect x="54" y="74" width="20" height="8" rx="4" fill="#c48a1a"/>
 </svg>`;
 
 async function main() {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch({
+    channel: process.env.PLAYLIST_LENS_CHANNEL || 'chromium',
+    headless: true,
+  });
   const page = await browser.newPage();
 
-  // Generate toolbar and store icons
   for (const size of [16, 32, 48, 128]) {
     await page.setViewportSize({ width: size, height: size });
     await page.setContent(`<body style="margin:0;overflow:hidden;background:transparent">${mark(size)}</body>`);
-    const outPath = path.join(iconsDir, `icon${size}.png`);
-    await page.screenshot({ path: outPath, omitBackground: true });
+    await page.screenshot({
+      path: path.join(iconsDir, `icon${size}.png`),
+      omitBackground: true,
+    });
   }
 
-  // Generate 440x280 promo tile
   await page.setViewportSize({ width: 440, height: 280 });
-  await page.setContent(`<body style="margin:0;width:440px;height:280px;background:#0f0f0f;color:#fff;
-    font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:26px;padding:0 34px;box-sizing:border-box">
-    <div style="flex:none;width:112px;height:112px;border-radius:26px;background:${RED};display:grid;place-items:center">
-      ${mark(96, false)}
-    </div>
+  await page.setContent(`<!DOCTYPE html><body style="margin:0;width:440px;height:280px;overflow:hidden;
+    background:radial-gradient(280px 180px at 18% 20%, rgba(240,193,75,.28), transparent 60%), linear-gradient(160deg,#1c1812,#0e0c09);
+    color:#f6f1e6;font-family:Roboto,system-ui,sans-serif;display:flex;align-items:center;gap:22px;padding:0 28px;box-sizing:border-box">
+    <img width="104" height="104" src="${`data:image/svg+xml,${encodeURIComponent(mark(104))}`}" alt="">
     <div>
-      <div style="font-size:30px;font-weight:700;line-height:1.15;letter-spacing:-0.5px">Playlist Lens</div>
-      <div style="font-size:15px;line-height:1.45;margin-top:10px;color:#aaa">
-        Fit videos into the time you have.<br>
-        Sort playlists by duration.<br>
-        Hide watched, see honest totals.
-      </div>
+      <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#f0c14b;font-weight:700">For YouTube</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:6px">Playlist Lens</div>
+      <div style="font-size:14px;line-height:1.45;margin-top:10px;color:#c8bfb0">Fit a playlist into the minutes you have.</div>
     </div>
   </body>`);
   await page.screenshot({ path: path.join(storeDir, 'promo-440x280.png') });
 
   await browser.close();
-  console.log('Successfully wrote src/icons/icon{16,32,48,128}.png and store/promo-440x280.png');
+  console.log('Wrote icons and store/promo-440x280.png');
 }
 
 main().catch(err => {

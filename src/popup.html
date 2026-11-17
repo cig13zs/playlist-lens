@@ -1,94 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="pl-app">
 <head>
   <meta charset="utf-8">
   <title>Playlist Lens</title>
+  <link rel="stylesheet" href="design.css">
   <style>
-    :root {
-      --bg: #ffffff;
-      --border: #e5e5e5;
-      --text: #0f0f0f;
-      --text-muted: #606060;
-      --primary: #065fd4;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1f1f1f;
-        --border: #383838;
-        --text: #f1f1f1;
-        --text-muted: #aaaaaa;
-        --primary: #3ea6ff;
-      }
-    }
     body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
+      font-family: var(--pl-font);
+      background:
+        radial-gradient(120px 80px at 100% 0%, var(--pl-accent-soft), transparent 70%),
+        var(--pl-bg-page);
+      color: var(--pl-text);
       margin: 0;
-      padding: 16px;
-      width: 260px;
+      padding: var(--pl-space-4);
+      width: 300px;
       box-sizing: border-box;
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: var(--pl-text-md);
+      line-height: var(--pl-leading);
     }
     .header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: var(--pl-space-2);
+      margin-bottom: var(--pl-space-3);
     }
-    .logo {
-      width: 20px;
-      height: 20px;
-      background: #c00;
-      border-radius: 4px;
+    .header img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
     }
     .title {
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .status-box {
-      background: rgba(0, 0, 0, 0.04);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-      color: var(--text-muted);
+      font-size: var(--pl-text-lg);
+      font-weight: var(--pl-weight-bold);
+      letter-spacing: -0.02em;
     }
     .version-tag {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 400;
+      display: block;
+      font-size: var(--pl-text-xs);
+      color: var(--pl-text-secondary);
+      font-weight: var(--pl-weight-medium);
+      letter-spacing: 0.04em;
     }
+    .status-box {
+      background: var(--pl-bg-elevated);
+      border: 1px solid var(--pl-border);
+      border-radius: var(--pl-radius-md);
+      padding: var(--pl-space-3);
+      margin-bottom: var(--pl-space-3);
+      font-size: var(--pl-text-sm);
+      color: var(--pl-text-secondary);
+      box-shadow: var(--pl-shadow);
+    }
+    .status-box p { margin: 0; }
     .footer {
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11px;
+      font-size: var(--pl-text-sm);
     }
     a {
-      color: var(--primary);
+      color: var(--pl-accent);
       text-decoration: none;
+      font-weight: var(--pl-weight-medium);
+      border-radius: var(--pl-radius-sm);
     }
-    a:hover {
-      text-decoration: underline;
+    a:hover { text-decoration: underline; }
+    a:focus-visible {
+      outline: 2px solid var(--pl-focus);
+      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
   <main>
     <div class="header">
+      <img src="icons/icon32.png" alt="">
       <div class="title">Playlist Lens <span class="version-tag" id="popup-version">v1.2.0</span></div>
     </div>
-
     <div class="status-box" role="status">
-      <p id="status-text" style="margin: 0;">Open a YouTube playlist (Watch Later, Liked videos, or any <code>list=</code> URL). The bar appears above the video rows.</p>
+      <p id="status-text">Open a YouTube playlist. The bar sits above the rows so you can fit videos into the minutes you have.</p>
     </div>
-
     <nav class="footer" aria-label="Playlist Lens links">
       <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer">Support on Ko-fi</a>
       <a href="#" id="open-options">Options</a>
