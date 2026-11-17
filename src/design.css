@@ -1,0 +1,109 @@
+/* Playlist Lens design tokens.
+   Light values match YouTube's light surface. Dark values apply when YouTube
+   sets html[dark], and on extension pages (html.pl-app) when the OS is dark. */
+
+:root {
+  --pl-font: "Roboto", "YouTube Sans", "Segoe UI", system-ui, sans-serif;
+  --pl-text-xs: 11px;
+  --pl-text-sm: 12px;
+  --pl-text-md: 13px;
+  --pl-text-lg: 15px;
+  --pl-text-xl: 22px;
+  --pl-text-2xl: 28px;
+  --pl-leading-tight: 1.25;
+  --pl-leading: 1.45;
+  --pl-weight-regular: 400;
+  --pl-weight-medium: 500;
+  --pl-weight-bold: 600;
+
+  --pl-space-1: 4px;
+  --pl-space-2: 8px;
+  --pl-space-3: 12px;
+  --pl-space-4: 16px;
+  --pl-space-5: 24px;
+  --pl-space-6: 32px;
+
+  --pl-radius-sm: 8px;
+  --pl-radius-md: 12px;
+  --pl-radius-lg: 16px;
+  --pl-radius-pill: 999px;
+
+  --pl-dur: 160ms;
+  --pl-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --pl-bg: #ffffff;
+  --pl-bg-page: #f7f5f1;
+  --pl-bg-elevated: #ffffff;
+  --pl-surface: #f2f2f2;
+  --pl-surface-hover: #e8e8e8;
+  --pl-border: rgba(15, 15, 15, 0.1);
+  --pl-text: #0f0f0f;
+  --pl-text-secondary: #606060;
+  --pl-accent: #8a5a00;
+  --pl-accent-strong: #6e4700;
+  --pl-accent-soft: rgba(184, 134, 11, 0.16);
+  --pl-on-accent: #fffaf0;
+  --pl-chip-active-bg: #0f0f0f;
+  --pl-chip-active-text: #ffffff;
+  --pl-focus: #065fd4;
+  --pl-success: #0b7a32;
+  --pl-kofi: #ff5e5b;
+  --pl-shadow: 0 1px 1px rgba(15, 15, 15, 0.04), 0 8px 24px rgba(15, 15, 15, 0.05);
+  --pl-text-primary: var(--pl-text);
+}
+
+html[dark],
+[dark] {
+  --pl-bg: #212121;
+  --pl-bg-page: #0f0f0f;
+  --pl-bg-elevated: #212121;
+  --pl-surface: #272727;
+  --pl-surface-hover: #3f3f3f;
+  --pl-border: rgba(255, 255, 255, 0.1);
+  --pl-text: #f1f1f1;
+  --pl-text-secondary: #aaaaaa;
+  --pl-accent: #f0c14b;
+  --pl-accent-strong: #ffe08a;
+  --pl-accent-soft: rgba(240, 193, 75, 0.16);
+  --pl-on-accent: #1a1406;
+  --pl-chip-active-bg: #f1f1f1;
+  --pl-chip-active-text: #0f0f0f;
+  --pl-focus: #3ea6ff;
+  --pl-success: #6dd58c;
+  --pl-shadow: 0 1px 1px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.28);
+  --pl-text-primary: var(--pl-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  html.pl-app {
+    --pl-bg: #212121;
+    --pl-bg-page: #0f0f0f;
+    --pl-bg-elevated: #212121;
+    --pl-surface: #272727;
+    --pl-surface-hover: #3f3f3f;
+    --pl-border: rgba(255, 255, 255, 0.1);
+    --pl-text: #f1f1f1;
+    --pl-text-secondary: #aaaaaa;
+    --pl-accent: #f0c14b;
+    --pl-accent-strong: #ffe08a;
+    --pl-accent-soft: rgba(240, 193, 75, 0.16);
+    --pl-on-accent: #1a1406;
+    --pl-chip-active-bg: #f1f1f1;
+    --pl-chip-active-text: #0f0f0f;
+    --pl-focus: #3ea6ff;
+    --pl-success: #6dd58c;
+    --pl-shadow: 0 1px 1px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.28);
+    --pl-text-primary: var(--pl-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.pl-app *,
+  #playlist-lens-bar,
+  #playlist-lens-bar * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

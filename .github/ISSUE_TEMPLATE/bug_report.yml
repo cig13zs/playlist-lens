@@ -1,0 +1,62 @@
+name: Bug report
+description: Something broke on a YouTube playlist page
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please avoid pasting private playlist URLs if you prefer — a public `list=` ID is enough.
+
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: From `chrome://extensions` or the popup header
+      placeholder: "1.2.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Edge
+        - Brave
+        - Firefox (temporary add-on)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open playlist …
+        2. Set budget to 30 …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors (optional)
+      description: F12 → Console, filter for "Playlist Lens"

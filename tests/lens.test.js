@@ -297,6 +297,30 @@ test('normalizeSpeed, atSpeed and formatSpeed', () => {
   assert.equal(L.formatSpeed(9), '1x');
 });
 
+test('sanitizeSettings rejects invalid stored values', () => {
+  const cleaned = L.sanitizeSettings({
+    sortChoice: 'evil',
+    budgetMinutes: '12abc',
+    hideWatched: false,
+    speed: 99,
+    useCount: -5,
+    firstUseDate: 'nope',
+    seenCards: ['kofi', 'bogus', 'rating', 'rating'],
+    dismissedForever: 1,
+    dismissedFirstRunHint: true,
+  });
+  assert.equal(cleaned.sortChoice, 'default');
+  assert.equal(cleaned.budgetMinutes, '12');
+  assert.equal(cleaned.hideWatched, false);
+  assert.equal(cleaned.speed, 1);
+  assert.equal(cleaned.useCount, 0);
+  assert.equal(cleaned.firstUseDate, null);
+  assert.deepEqual(cleaned.seenCards, ['kofi', 'rating']);
+  assert.equal(cleaned.dismissedForever, false);
+  assert.equal(cleaned.dismissedFirstRunHint, true);
+  assert.equal(L.sanitizeSettings({ budgetMinutes: '99999' }).budgetMinutes, '9999');
+});
+
 test('evaluatePlaylist fits more video into the budget at higher speeds', () => {
   const list = [
     { id: 'a', title: 'a', durationText: '10:00' },

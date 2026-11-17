@@ -15,7 +15,59 @@
     useCount: 0,
     firstUseDate: null,
     seenCards: [], // ['kofi', 'rating']
+    dismissedFirstRunHint: false,
   });
+
+  const ALLOWED_CARDS = new Set(['kofi', 'rating']);
+
+  // Strip untrusted storage values before they touch UI or logic.
+  function sanitizeSettings(raw) {
+    const input = raw && typeof raw === 'object' ? raw : {};
+    const sortChoice = ['default', 'shortest', 'longest'].includes(input.sortChoice)
+      ? input.sortChoice
+      : DEFAULTS.sortChoice;
+
+    let budgetMinutes = '';
+    if (input.budgetMinutes !== undefined && input.budgetMinutes !== null && input.budgetMinutes !== '') {
+      const digits = String(input.budgetMinutes).trim().replace(/\D/g, '').slice(0, 4);
+      if (digits) {
+        const n = Number(digits);
+        if (Number.isFinite(n) && n >= 1 && n <= 9999) {
+          budgetMinutes = String(n);
+        }
+      }
+    }
+
+    const hideWatched = input.hideWatched === false ? false : DEFAULTS.hideWatched;
+
+    let useCount = Number(input.useCount);
+    if (!Number.isFinite(useCount) || useCount < 0) useCount = 0;
+    useCount = Math.min(Math.floor(useCount), 1_000_000);
+
+    let firstUseDate = input.firstUseDate;
+    if (firstUseDate !== null && firstUseDate !== undefined) {
+      firstUseDate = Number(firstUseDate);
+      if (!Number.isFinite(firstUseDate) || firstUseDate < 0) firstUseDate = null;
+    } else {
+      firstUseDate = null;
+    }
+
+    const seenCards = Array.isArray(input.seenCards)
+      ? [...new Set(input.seenCards.filter(c => typeof c === 'string' && ALLOWED_CARDS.has(c)))]
+      : [];
+
+    return {
+      budgetMinutes,
+      hideWatched,
+      sortChoice,
+      speed: normalizeSpeed(input.speed),
+      useCount,
+      firstUseDate,
+      seenCards,
+      dismissedForever: input.dismissedForever === true,
+      dismissedFirstRunHint: input.dismissedFirstRunHint === true,
+    };
+  }
 
   // Playback speeds offered in the bar, matching YouTube's common steps up to 2x.
   const SPEEDS = Object.freeze([1, 1.25, 1.5, 1.75, 2]);
@@ -412,6 +464,7 @@
     pickForBudget,
     evaluatePlaylist,
     nextCard,
+    sanitizeSettings,
   };
 
   if (typeof module === 'object' && module.exports) {
