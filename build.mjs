@@ -15,7 +15,7 @@ const targets = {
   firefox: {
     ...base,
     // Firefox Add-ons caps names at 50 characters; the store title lives in the name on both stores.
-    name: 'Playlist Lens: sort playlists by duration',
+    name: base.name,
     browser_specific_settings: {
       gecko: { id: 'playlist-lens@jju1s', strict_min_version: '128.0', data_collection_permissions: { required: ['none'] } },
       gecko_android: { strict_min_version: '128.0' },

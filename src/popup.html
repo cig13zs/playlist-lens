@@ -2,7 +2,7 @@
 <html lang="en" class="pl-app">
 <head>
   <meta charset="utf-8">
-  <title>Playlist Lens</title>
+  <title>Fit the Queue</title>
   <link rel="stylesheet" href="design.css">
   <style>
     body {
@@ -13,7 +13,7 @@
       color: var(--pl-text);
       margin: 0;
       padding: var(--pl-space-4);
-      width: 300px;
+      width: 320px;
       box-sizing: border-box;
       font-size: var(--pl-text-md);
       line-height: var(--pl-leading);
@@ -69,22 +69,63 @@
       outline: 2px solid var(--pl-focus);
       outline-offset: 2px;
     }
+    #progress-list {
+      list-style: none;
+      margin: 0 0 var(--pl-space-3);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #progress-list[hidden] { display: none; }
+    #progress-list li {
+      background: var(--pl-bg-elevated);
+      border: 1px solid var(--pl-border);
+      border-radius: var(--pl-radius-md);
+      padding: 8px 10px;
+    }
+    #progress-list a {
+      display: block;
+      color: var(--pl-text);
+      font-weight: var(--pl-weight-medium);
+    }
+    #progress-list .meta {
+      display: block;
+      margin-top: 2px;
+      color: var(--pl-text-secondary);
+      font-size: var(--pl-text-xs);
+      font-variant-numeric: tabular-nums;
+    }
+    .bar {
+      margin-top: 6px;
+      height: 4px;
+      border-radius: var(--pl-radius-pill);
+      background: var(--pl-surface);
+      overflow: hidden;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--pl-accent);
+    }
   </style>
 </head>
 <body>
   <main>
     <div class="header">
       <img src="icons/icon32.png" alt="">
-      <div class="title">Playlist Lens <span class="version-tag" id="popup-version">v1.2.0</span></div>
+      <div class="title">Fit the Queue <span class="version-tag" id="popup-version">v2.0.0</span></div>
     </div>
+    <ul id="progress-list" hidden></ul>
     <div class="status-box" role="status">
-      <p id="status-text">Open a YouTube playlist. The bar sits above the rows so you can fit videos into the minutes you have.</p>
+      <p id="status-text">Open a YouTube playlist. The bar shows time left at 1x–2x and what fits in the minutes you have.</p>
     </div>
-    <nav class="footer" aria-label="Playlist Lens links">
+    <nav class="footer" aria-label="Fit the Queue links">
       <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer">Support on Ko-fi</a>
       <a href="#" id="open-options">Options</a>
     </nav>
   </main>
+  <script src="lib/lens.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

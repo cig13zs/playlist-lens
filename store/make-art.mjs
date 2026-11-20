@@ -48,8 +48,8 @@ async function main() {
     <img width="104" height="104" src="${`data:image/svg+xml,${encodeURIComponent(mark(104))}`}" alt="">
     <div>
       <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#f0c14b;font-weight:700">For YouTube</div>
-      <div style="font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:6px">Playlist Lens</div>
-      <div style="font-size:14px;line-height:1.45;margin-top:10px;color:#c8bfb0">Fit a playlist into the minutes you have.</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:6px">Fit the Queue</div>
+      <div style="font-size:14px;line-height:1.45;margin-top:10px;color:#c8bfb0">YouTube playlist time, sort, and a study plan.</div>
     </div>
   </body>`);
   await page.screenshot({ path: path.join(storeDir, 'promo-440x280.png') });

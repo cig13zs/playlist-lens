@@ -23,6 +23,7 @@ function readFixture(name) {
   return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
 }
 const syntheticHtml = readFixture('playlist-synthetic.html');
+const lockupHtml = readFixture('playlist-lockup.html');
 const under100Html = readFixture('playlist-under-100.html');
 const over100Html = readFixture('playlist-over-100.html');
 const offline = process.env.PLAYLIST_LENS_OFFLINE === '1';
@@ -109,7 +110,7 @@ async function launchBrowser(options = {}) {
   cdp.on('Runtime.consoleAPICalled', e => {
     if (e.type === 'error' || e.type === 'assert') {
       const msg = e.args.map(a => a.value ?? a.description).join(' ');
-      if (extContextIds.has(e.executionContextId) || msg.includes('[Playlist Lens]')) {
+      if (extContextIds.has(e.executionContextId) || msg.includes('[Playlist Lens]') || msg.includes('[Fit the Queue]')) {
         extensionErrors.push(`Extension console.${e.type} on ${page.url()}: ${msg}`);
       }
     }
@@ -125,6 +126,14 @@ async function main() {
   const { context, page, getExtId } = await launchBrowser();
 
   // Intercept synthetic fixture
+  await context.route('https://www.youtube.com/playlist?list=PL_LOCKUP', route => {
+    return route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: lockupHtml || '',
+    });
+  });
+
   await context.route('https://www.youtube.com/playlist?list=WL', route => {
     return route.fulfill({
       status: 200,
@@ -152,6 +161,8 @@ async function main() {
   });
 
 async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = null) {
+  const fillMode = page.locator('#pl-fill-mode');
+  if (await fillMode.count()) await fillMode.selectOption('most');
   const input = page.locator('#pl-budget-input');
   await input.fill('30');
   await page.waitForTimeout(500);
@@ -324,6 +335,12 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     assert.match(header, /2 h 25 m total/);
     assert.match(header, /1 h 50 m unwatched/);
     assert.match(header, /1 without a length/);
+    assert.match(await page.locator('#pl-progress').textContent(), /1 of 8 watched \(13%\)/);
+    const speeds = await page.locator('#pl-speed-board').textContent();
+    assert.match(speeds, /1x/);
+    assert.match(speeds, /1\.25x/);
+    assert.match(speeds, /1\.5x/);
+    assert.match(speeds, /2x/);
 
     // Watched video 2 (95%) must be hidden by default
     const row2 = page.locator('ytd-playlist-video-renderer[data-id="vid-2"]');
@@ -499,6 +516,108 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
 
     await page.screenshot({ path: path.join(screenshotsDir, '3-synthetic-reset.png') });
   });
+
+  await step('sort by views and date, filter by channel and length', async () => {
+    await page.locator('#pl-sort-more').selectOption('mostViews');
+    await page.waitForTimeout(200);
+    const order = id => page.locator(`ytd-playlist-video-renderer[data-id="${id}"]`).evaluate(el => Number(el.style.order));
+    assert.ok(await order('vid-8') < await order('vid-2'), '10M views sorts before 2.1M');
+    assert.ok(await order('vid-4') < await order('vid-6'), 'a counted view total sorts before No views');
+
+    await page.locator('#pl-sort-more').selectOption('newest');
+    await page.waitForTimeout(200);
+    assert.ok(await order('vid-4') < await order('vid-7'), '2 days ago sorts before 3 weeks ago');
+    assert.ok(await order('vid-7') < await order('vid-8'), '3 weeks ago sorts before 6 years ago');
+    const orders = await page.locator('ytd-playlist-video-renderer').evaluateAll(rows =>
+      rows.map(row => Number(row.style.order || 0)));
+    const liveOrder = await order('vid-6');
+    assert.ok(orders.every(value => liveOrder >= value), 'a video with no date sorts last');
+
+    await page.locator('#pl-channel-filter').fill('data');
+    await page.waitForTimeout(200);
+    const visible = () => page.locator('ytd-playlist-video-renderer').evaluateAll(rows =>
+      rows.filter(row => row.checkVisibility()).map(row => row.getAttribute('data-id')).sort());
+    assert.deepEqual(await visible(), ['vid-5']);
+
+    await page.locator('#pl-channel-filter').fill('');
+    await page.locator('#pl-length-band').selectOption('over30');
+    await page.waitForTimeout(200);
+    assert.deepEqual(await visible(), ['vid-8']);
+    await page.locator('#pl-length-band').selectOption('any');
+    await page.locator('.playlist-lens-chip[data-sort="default"]').click();
+    await page.waitForTimeout(200);
+  });
+
+  await step('fill the time packs more minutes than shortest-first', async () => {
+    await page.locator('#pl-fill-mode').selectOption('most');
+    await page.locator('#pl-budget-input').fill('25');
+    await page.waitForTimeout(200);
+    assert.match(await page.locator('#pl-budget-summary').textContent(), /2 videos fit in 25 min \(15 m\)/);
+
+    await page.locator('#pl-fill-mode').selectOption('fill');
+    await page.waitForTimeout(200);
+    assert.match(await page.locator('#pl-budget-summary').textContent(), /2 videos fit in 25 min \(25 m\)/);
+    assert.equal(await page.locator('ytd-playlist-video-renderer[data-id="vid-1"]').isVisible(), true);
+    assert.equal(await page.locator('ytd-playlist-video-renderer[data-id="vid-3"]').isVisible(), true);
+    assert.equal(await page.locator('ytd-playlist-video-renderer[data-id="vid-4"]').isVisible(), false);
+    await page.screenshot({ path: path.join(screenshotsDir, '12-fill-the-time.png') });
+
+    await page.locator('#pl-fill-mode').selectOption('most');
+    await page.locator('#pl-budget-input').fill('');
+    await page.waitForTimeout(200);
+  });
+
+  await step('study plan splits the remaining videos across days', async () => {
+    await page.locator('#pl-study-open').click();
+    await page.locator('#pl-study-days').fill('2');
+    await page.locator('#pl-study-minutes').fill('30');
+    await page.locator('#pl-study-minutes').blur();
+    await page.waitForTimeout(200);
+    const plan = await page.locator('#pl-study-output').textContent();
+    assert.match(plan, /Day 1/);
+    assert.match(plan, /Day 2/);
+    assert.match(plan, /Designing Data-Intensive Applications/);
+    assert.match(plan, /2 more videos need another day/);
+    await page.screenshot({ path: path.join(screenshotsDir, '13-study-plan.png') });
+    await page.locator('#pl-study-open').click();
+  });
+
+  await step('export CSV downloads the loaded rows on this device', async () => {
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#pl-export-csv').click();
+    const download = await downloadPromise;
+    const csv = fs.readFileSync(await download.path(), 'utf8');
+    assert.match(csv, /Designing Data-Intensive Applications/);
+    assert.match(csv, /vid-1/);
+    assert.match(csv, /position,id,title/);
+    await download.delete();
+  });
+
+  await step('Watch Later cleanup removes one watched video only after a click', async () => {
+    await page.locator('#pl-clean-open').click();
+    const batch = page.locator('#pl-cleanup-selected');
+    assert.equal(await batch.isDisabled(), true);
+    assert.match(await page.locator('#pl-cleanup-list').textContent(), /Building Fast Web Applications/);
+    await page.locator('#pl-cleanup-ack').check();
+    assert.equal(await batch.isDisabled(), false);
+    await page.locator('.pl-cleanup-one').click();
+    await page.waitForTimeout(600);
+    assert.equal(await page.evaluate(() => window.__plRemoved), 1);
+    assert.equal(await page.evaluate(() => window.__plDecoy), 0);
+    assert.equal(await page.locator('ytd-playlist-video-renderer[data-id="vid-2"]').count(), 0);
+    await page.screenshot({ path: path.join(screenshotsDir, '14-watch-later-cleanup.png') });
+  });
+
+  await step('lockup markup: reads a badge and an aria-label duration, and hides Watch Later cleanup', async () => {
+    await page.goto('https://www.youtube.com/playlist?list=PL_LOCKUP');
+    await page.locator('#playlist-lens-bar').waitFor();
+    const header = await page.locator('#pl-runtime-header').textContent();
+    assert.match(header, /2 videos/);
+    assert.match(header, /20 m 34 s total/);
+    assert.equal(await page.locator('#pl-clean-open').isHidden(), true);
+    assert.equal(await page.locator('#pl-health').isHidden(), true);
+    await page.screenshot({ path: path.join(screenshotsDir, '15-lockup-markup.png') });
+  }, lockupHtml ? null : 'no playlist-lockup.html fixture');
 
   // Step 6: Under-100 real fixture (80 videos)
   await step('under-100 fixture: correctly reads full 80-video playlist and verifies 30 min budget layout', async () => {
@@ -715,21 +834,33 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
     const optionsUrl = `chrome-extension://${extId}/options.html`;
     await optPage.goto(optionsUrl);
     await optPage.locator('h1').waitFor();
-    assert.equal(await optPage.locator('h1').textContent(), 'Playlist Lens');
+    assert.equal(await optPage.locator('h1').textContent(), 'Fit the Queue');
+    assert.equal(await optPage.locator('#default-fill').inputValue(), 'most');
+    assert.ok(await optPage.locator('#forget-progress').isVisible());
     assert.ok(await optPage.locator('a[href*="ko-fi.com/jju1s"]').isVisible());
+    const hideDefault = optPage.locator('#default-hide-watched');
+    if (!(await hideDefault.isChecked())) await hideDefault.check();
+    await optPage.locator('#default-study-days').fill('5');
+    await optPage.locator('#default-study-minutes').fill('45');
+    await optPage.locator('#default-study-minutes').blur();
     await optPage.screenshot({ path: path.join(storeDir, '4-options-page.png') });
     await optPage.close();
   });
 
   // Step 10: Popup page
   await step('popup page: renders status and links cleanly', async () => {
+    await page.goto('https://www.youtube.com/playlist?list=WL');
+    await page.locator('#playlist-lens-bar').waitFor();
+    await page.waitForTimeout(300);
     const extId = getExtId();
     assert.ok(extId, 'extId must be captured');
     const popupPage = await context.newPage();
-    await popupPage.setViewportSize({ width: 360, height: 240 });
+    await popupPage.setViewportSize({ width: 400, height: 560 });
     await popupPage.goto(`chrome-extension://${extId}/popup.html`);
     await popupPage.locator('.title').waitFor();
-    assert.match(await popupPage.locator('.title').textContent(), /^Playlist Lens v\d+\.\d+\.\d+$/);
+    assert.match(await popupPage.locator('.title').textContent(), /^Fit the Queue v\d+\.\d+\.\d+$/);
+    await popupPage.locator('#progress-list').waitFor();
+    assert.match(await popupPage.locator('#progress-list').textContent(), /Watch Later/);
     await popupPage.screenshot({ path: path.join(screenshotsDir, '7-popup.png') });
     await popupPage.close();
   });
@@ -743,6 +874,26 @@ async function verify30MinBudgetAndReset(page, fixtureName, onBudgetApplied = nu
   });
 
   await context.close();
+
+  const afterDir = path.join(root, 'tests', 'visual', 'after');
+  fs.mkdirSync(afterDir, { recursive: true });
+  for (const name of fs.readdirSync(storeDir)) {
+    if (name.endsWith('.png')) fs.copyFileSync(path.join(storeDir, name), path.join(afterDir, name));
+  }
+  for (const name of [
+    '7-popup.png',
+    '11-first-run-hint.png',
+    '2-synthetic-30min-budget-light.png',
+    '12-fill-the-time.png',
+    '13-study-plan.png',
+    '14-watch-later-cleanup.png',
+    '15-lockup-markup.png',
+  ]) {
+    const shot = path.join(screenshotsDir, name);
+    if (fs.existsSync(shot)) fs.copyFileSync(shot, path.join(afterDir, name));
+  }
+  const budgetShot = path.join(storeDir, '1-watch-later-30min-budget.png');
+  if (fs.existsSync(budgetShot)) fs.copyFileSync(budgetShot, path.join(root, 'docs', 'shot.png'));
 
   console.log(`\n${passed} passed, ${failed} failed, ${skipped} skipped\n`);
   if (failed > 0) process.exit(1);

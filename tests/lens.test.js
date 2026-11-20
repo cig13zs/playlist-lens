@@ -352,3 +352,235 @@ test('evaluatePlaylist fits more video into the budget at higher speeds', () => 
   assert.equal(double.stats.unwatchedWatchSec, 1410);
   assert.equal(L.evaluatePlaylist(list, { speed: 4 }).stats.unwatchedWatchSec, 47 * 60);
 });
+
+test('watchTimesAtSpeeds reports remaining time at 1x, 1.25x, 1.5x, and 2x', () => {
+  const board = L.watchTimesAtSpeeds(7200);
+  assert.deepEqual(board.map(row => row.speed), [1, 1.25, 1.5, 2]);
+  assert.equal(board[0].watchSec, 7200);
+  assert.equal(board[1].watchSec, 5760);
+  assert.equal(board[2].watchSec, 4800);
+  assert.equal(board[3].watchSec, 3600);
+  assert.equal(L.watchTimesAtSpeeds(null)[0].watchSec, null);
+});
+
+test('migrateSettings keeps a v1 blob and fills v2 defaults', () => {
+  const v1 = {
+    budgetMinutes: '30',
+    hideWatched: false,
+    sortChoice: 'longest',
+    speed: 1.5,
+    useCount: 12,
+    firstUseDate: 1700000000000,
+    seenCards: ['kofi'],
+    dismissedFirstRunHint: true,
+  };
+  const cleaned = L.sanitizeSettings(v1);
+  assert.equal(cleaned.budgetMinutes, '30');
+  assert.equal(cleaned.hideWatched, false);
+  assert.equal(cleaned.sortChoice, 'longest');
+  assert.equal(cleaned.speed, 1.5);
+  assert.equal(cleaned.useCount, 12);
+  assert.equal(cleaned.firstUseDate, 1700000000000);
+  assert.deepEqual(cleaned.seenCards, ['kofi']);
+  assert.equal(cleaned.fillMode, 'most');
+  assert.equal(cleaned.showSpeedBoard, true);
+  assert.equal(cleaned.rememberProgress, true);
+  assert.equal(cleaned.studyDays, 5);
+  assert.equal(cleaned.studyMinutes, 45);
+  assert.equal(cleaned.settingsVersion, 2);
+  assert.equal(L.sanitizeSettings({ sort: 'short' }).sortChoice, 'shortest');
+  assert.equal(L.sanitizeSettings({ playbackSpeed: 2 }).speed, 2);
+  assert.equal(L.sanitizeSettings({ fillMode: 'nope', studyDays: 0, studyMinutes: 9000 }).fillMode, 'most');
+  assert.equal(L.sanitizeSettings({ studyDays: 0 }).studyDays, 1);
+  assert.equal(L.sanitizeSettings({ studyMinutes: 9000 }).studyMinutes, 600);
+  const original = { sort: 'long' };
+  L.sanitizeSettings(original);
+  assert.equal(original.sortChoice, undefined);
+});
+
+test('parseViewCount, parseAgeDays, and parseMetaLine read a YouTube byline', () => {
+  assert.equal(L.parseViewCount('1.2M views'), 1200000);
+  assert.equal(L.parseViewCount('3,200 views'), 3200);
+  assert.equal(L.parseViewCount('10M views'), 10000000);
+  assert.equal(L.parseViewCount('2.1M views'), 2100000);
+  assert.equal(L.parseViewCount('No views'), 0);
+  assert.equal(L.parseViewCount(''), null);
+  assert.equal(L.parseViewCount('Computer Science Hub'), null);
+
+  assert.equal(L.parseAgeDays('2 days ago'), 2);
+  assert.equal(L.parseAgeDays('3 weeks ago'), 21);
+  assert.equal(L.parseAgeDays('yesterday'), 1);
+  assert.equal(L.parseAgeDays('2 years ago'), 730.5);
+  const now = Date.UTC(2026, 0, 20);
+  assert.equal(L.parseAgeDays('2026-01-18', now), 2);
+  assert.ok(Math.abs(L.parseAgeDays('Jan 2, 2024', now) - (now - Date.UTC(2024, 0, 2)) / 864e5) < 0.001);
+
+  const meta = L.parseMetaLine('Computer Science Hub • 120,000 views • 2 years ago');
+  assert.equal(meta.channel, 'Computer Science Hub');
+  assert.equal(meta.views, 120000);
+  assert.equal(meta.ageDays, 730.5);
+  assert.equal(L.parseMetaLine('3Blue1Brown').channel, '3Blue1Brown');
+  assert.equal(L.parseMetaLine('3Blue1Brown').views, null);
+});
+
+test('interpretRow prefers the badge and falls back to an aria-label duration', () => {
+  assert.equal(L.interpretRow({ title: 'A', badgeText: '1:00', ariaLabels: ['2 minutes'] }).durationSec, 60);
+  const aria = L.interpretRow({
+    title: 'Office hours',
+    badgeText: '',
+    ariaLabels: ['Office hours 12 minutes, 4 seconds'],
+    metaText: 'Queue School • 4,200 views • 5 days ago',
+  });
+  assert.equal(aria.durationSec, 724);
+  assert.equal(aria.channel, 'Queue School');
+  assert.equal(aria.views, 4200);
+  assert.equal(aria.ageDays, 5);
+  assert.equal(L.parseAriaDuration('1 hour, 2 minutes, 3 seconds'), 3723);
+  assert.equal(L.parseAriaDuration('LIVE'), null);
+});
+
+test('readHealth warns when lengths disappear and stays quiet when the row is readable', () => {
+  const ok = L.readHealth([
+    { title: 'One', durationSec: 60 },
+    { title: 'Two', durationSec: 120 },
+    { title: 'Three', durationSec: 30 },
+  ]);
+  assert.equal(ok.ok, true);
+  const broken = L.readHealth([
+    { title: 'One', durationSec: null },
+    { title: 'Two', durationSec: null },
+    { title: 'Three', durationSec: 30 },
+  ]);
+  assert.equal(broken.ok, false);
+  assert.equal(broken.level, 'lengths');
+  assert.match(broken.message, /1 of 3/);
+  assert.equal(L.readHealth([]).level, 'empty');
+});
+
+test('fillTime packs more minutes than shortest-first when a longer pair fits', () => {
+  const videos = [
+    { id: 'a', remainingSec: 14 * 60 },
+    { id: 'b', remainingSec: 12 * 60 },
+    { id: 'c', remainingSec: 11 * 60 },
+    { id: 'd', remainingSec: 10 * 60 },
+  ];
+  const greedy = L.pickForBudget(videos, 25 * 60);
+  assert.equal(greedy.totalSec, 21 * 60);
+  const fill = L.fillTime(videos, 25 * 60);
+  assert.equal(fill.totalSec, 25 * 60);
+  assert.equal(fill.count, 2);
+  assert.ok(fill.pickedIds.has('a'));
+  assert.ok(fill.pickedIds.has('c'));
+
+  // Same filled time: prefer more videos over one long video.
+  const tie = L.fillTime([
+    { id: 'long', remainingSec: 600 },
+    { id: 'a', remainingSec: 360 },
+    { id: 'b', remainingSec: 240 },
+  ], 600);
+  assert.equal(tie.totalSec, 600);
+  assert.equal(tie.count, 2);
+  assert.ok(tie.pickedIds.has('a') && tie.pickedIds.has('b'));
+  assert.ok(!tie.pickedIds.has('long'));
+
+  const all = L.fillTime([{ id: 'a', remainingSec: 10 }, { id: 'b', remainingSec: 20 }], 100);
+  assert.equal(all.count, 2);
+  assert.equal(all.totalSec, 30);
+  assert.equal(L.fillTime([{ id: 'a', remainingSec: 500 }], 100).count, 0);
+});
+
+test('evaluatePlaylist sorts by views, date, and channel and can fill the budget', () => {
+  const list = [
+    { id: 'old', title: 'Old hit', durationText: '10:00', channel: 'Zebra', views: 50, ageDays: 400 },
+    { id: 'new', title: 'New clip', durationText: '4:00', channel: 'Alpha', views: 10, ageDays: 2 },
+    { id: 'mid', title: 'Middle', durationText: '25:00', channel: 'Alpha', views: 1000, ageDays: 30 },
+  ];
+  const newest = L.evaluatePlaylist(list, { hideWatched: false, sortChoice: 'newest' });
+  assert.deepEqual(newest.videos.map(v => v.id).sort((a, b) => newest.videos.find(x => x.id === a).cssOrder - newest.videos.find(x => x.id === b).cssOrder), ['new', 'mid', 'old']);
+
+  const popular = L.evaluatePlaylist(list, { hideWatched: false, sortChoice: 'mostViews' });
+  assert.equal(popular.videos.find(v => v.id === 'mid').cssOrder, 1);
+  assert.equal(popular.videos.find(v => v.id === 'new').cssOrder, 3);
+
+  const byChannel = L.evaluatePlaylist(list, { hideWatched: false, sortChoice: 'channel' });
+  assert.ok(byChannel.videos.find(v => v.id === 'old').cssOrder > byChannel.videos.find(v => v.id === 'new').cssOrder);
+
+  const channel = L.evaluatePlaylist(list, { hideWatched: false, channel: 'alpha' });
+  assert.deepEqual(channel.videos.filter(v => v.visible).map(v => v.id), ['new', 'mid']);
+  assert.equal(channel.videos.find(v => v.id === 'old').hiddenReason, 'channel');
+
+  const band = L.evaluatePlaylist(list, { hideWatched: false, durationBand: 'over30' });
+  assert.deepEqual(band.videos.filter(v => v.visible).map(v => v.id), []);
+  const midBand = L.evaluatePlaylist(list, { hideWatched: false, durationBand: 'under10' });
+  // 10:00 is still "under 10 min" (the band is remaining <= 10:00).
+  assert.deepEqual(midBand.videos.filter(v => v.visible).map(v => v.id), ['old', 'new']);
+
+  // 25 min, most-videos packs 4 + 10 = 14. Fill-the-time takes the 25 min video.
+  const most = L.evaluatePlaylist(list, { hideWatched: false, budgetMinutes: '25', fillMode: 'most' });
+  assert.equal(most.stats.fittedSec, 14 * 60);
+  const fill = L.evaluatePlaylist(list, { hideWatched: false, budgetMinutes: '25', fillMode: 'fill' });
+  assert.equal(fill.stats.fittedSec, 25 * 60);
+  assert.deepEqual(fill.videos.filter(v => v.visible).map(v => v.id), ['mid']);
+  assert.equal(fill.stats.speedBoard.length, 4);
+});
+
+test('planStudy splits a course across days and does not cut a video in half', () => {
+  const videos = [
+    { id: 'a', title: 'Intro', remainingSec: 20 * 60, isWatched: false },
+    { id: 'b', title: 'Next', remainingSec: 20 * 60, isWatched: false },
+    { id: 'c', title: 'Long', remainingSec: 50 * 60, isWatched: false },
+    { id: 'd', title: 'Done', remainingSec: 0, isWatched: true },
+    { id: 'e', title: 'Tail', remainingSec: 10 * 60, isWatched: false },
+  ];
+  const plan = L.planStudy(videos, { days: 3, minutesPerDay: 30, speed: 1 });
+  assert.equal(plan.days.length, 3);
+  assert.deepEqual(plan.days[0].videos.map(v => v.id), ['a']);
+  assert.deepEqual(plan.days[1].videos.map(v => v.id), ['b']);
+  assert.equal(plan.days[2].overrun, true);
+  assert.deepEqual(plan.days[2].videos.map(v => v.id), ['c']);
+  assert.deepEqual(plan.overflow.map(v => v.id), ['e']);
+  assert.match(L.studyToMarkdown(plan, { title: 'CS50' }), /Day 1/);
+
+  // At 2x, 30 minutes holds 60 minutes of video, so the 50 min lecture fits in one day.
+  const fast = L.planStudy(videos.filter(v => v.id === 'c'), { days: 2, minutesPerDay: 30, speed: 2 });
+  assert.equal(fast.days.length, 1);
+  assert.equal(fast.days[0].overrun, false);
+  assert.equal(fast.perDaySec, 3600);
+});
+
+test('videosToCsv escapes formulas and videosToMarkdown keeps visible rows', () => {
+  const csv = L.videosToCsv([
+    { id: 'a', title: '=cmd|inject', channel: 'A', durationSec: 60, remainingSec: 30, watchedPct: 50, views: 10, ageDays: 1.234, url: 'https://www.youtube.com/watch?v=a', visible: true, originalIndex: 0 },
+  ]);
+  assert.match(csv, /'=cmd\|inject/);
+  assert.match(csv, /https:\/\/www\.youtube\.com\/watch\?v=a/);
+  const md = L.videosToMarkdown([
+    { id: 'a', title: 'Keep', channel: 'A', durationSec: 60, remainingSec: 60, watchedPct: 0, visible: true, originalIndex: 0 },
+    { id: 'b', title: 'Hide', channel: 'B', durationSec: 60, remainingSec: 60, watchedPct: 0, visible: false, originalIndex: 1 },
+  ], { title: 'Queue', visibleOnly: true });
+  assert.match(md, /Keep/);
+  assert.doesNotMatch(md, /Hide/);
+});
+
+test('progress snapshots stay local-shaped and cap the saved list', () => {
+  assert.equal(L.progressSnapshot({ totalVideos: 8, watchedCount: 1, unwatchedSec: 6600 }, { listId: 'WL', title: 'Watch Later' }, 100).pct, 13);
+  assert.equal(L.progressSnapshot({ totalVideos: 1, watchedCount: 0, unwatchedSec: 1 }, { listId: '../etc', title: 'x' }), null);
+  const store = {};
+  let merged = store;
+  for (let i = 0; i < 40; i++) {
+    merged = L.mergeProgress(merged, L.progressSnapshot(
+      { totalVideos: 10, watchedCount: 1, unwatchedSec: 10 },
+      { listId: `PL${i}`, title: `Course ${i}` },
+      i,
+    ));
+  }
+  const recent = L.listRecentProgress(merged);
+  assert.equal(recent.length, L.PROGRESS_LIMIT);
+  assert.equal(recent[0].listId, 'PL39');
+  assert.equal(L.isWatchLaterRemoveLabel('Remove from Watch Later'), true);
+  assert.equal(L.isWatchLaterRemoveLabel('  remove   from watch later '), true);
+  assert.equal(L.isWatchLaterRemoveLabel('Delete playlist'), false);
+  assert.equal(L.isWatchLaterRemoveLabel('Remove from playlist'), false);
+  assert.equal(L.isWatchLaterList('WL'), true);
+  assert.equal(L.isWatchLaterList('PLxxxx'), false);
+});
