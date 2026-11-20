@@ -1,6 +1,6 @@
-# Contributing to Playlist Lens
+# Contributing to Fit the Queue
 
-Thanks for helping improve Playlist Lens. This project stays small on purpose: no analytics, no backend, and the smallest permission surface that still works on YouTube playlists.
+Thanks for helping improve Fit the Queue (formerly Playlist Lens). This project stays small on purpose: no analytics, no backend, and the smallest permission surface that still works on YouTube playlists.
 
 ## Before you start
 

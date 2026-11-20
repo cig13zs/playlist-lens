@@ -1,6 +1,8 @@
-# Playlist Lens
+# Fit the Queue
 
-**Fit YouTube playlists into the time you actually have** — sort by duration, hide watched videos, filter titles, and see honest unwatched totals. Private, offline, no analytics.
+**See how long a YouTube playlist really takes, and what fits in the time you have.** Total and remaining time at 1x–2x, sort and filter, pack a minute budget, export, and split a course across days. Private, offline, no analytics.
+
+Formerly **Playlist Lens**. The storage key is unchanged, so version 2 keeps your settings.
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/olpginhinkaacjcfncphknhnmignoimo?label=chrome%20web%20store)](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo)
 [![Tests](https://img.shields.io/github/actions/workflow/status/cig13zs/playlist-lens/ci.yml?label=ci)](https://github.com/cig13zs/playlist-lens/actions)
@@ -9,18 +11,19 @@
 
 ## Install
 
-**[Playlist Lens on the Chrome Web Store](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo)** — works in Chrome, Edge, and Brave.
+**[Fit the Queue on the Chrome Web Store](https://chromewebstore.google.com/detail/olpginhinkaacjcfncphknhnmignoimo)** — works in Chrome, Edge, and Brave. Store title and description: [STORE_LISTING.md](STORE_LISTING.md).
 
 ## Features
 
-- **Time budget** — Enter minutes you have; only videos that fit stay visible, shortest first, with a running total (e.g. “3 videos fit in 30 min”). A single video longer than the budget is excluded, not truncated.
-- **Title filter** — Keep videos whose titles contain every word you type; prefix a word with `-` to exclude it (e.g. `lecture -shorts`). Works with the time budget.
-- **Playback speed** — Set 1x–2x next to the minutes box. At 1.5x, 30 minutes holds 45 minutes of video; totals reflect watch time at that speed.
-- **Runtime header** — Video count, total runtime, unwatched runtime, and count of items without a length (live, premiere, etc.).
-- **Hide watched** — Videos with ≥90% watch progress are hidden by default; partial watches count remaining time only.
-- **Sort** — Default YouTube order, shortest first, or longest first (in-page reorder via CSS; drag-to-reorder is disabled while sorting/filtering).
-- **Load all** — Scrolls long playlists until YouTube stops loading or 2,000 videos, with honest “Loaded N of M” messaging.
-- **Reset** — Restores native order, visibility, and controls.
+- **Speed row** — Time still left at 1x, 1.25x, 1.5x, and 2x, together. Partial watches count only the remainder.
+- **Time budget** — Enter the minutes you have. **Most videos** keeps the shortest ones that fit. **Fill the time** packs the set that uses the most of those minutes. A video longer than the budget is left out, not cut short.
+- **Sort and filter** — YouTube order, shortest, longest, newest, oldest, most or least viewed, or channel A–Z. Filter titles and channel names (`lecture -shorts`), and keep videos under 10 minutes, 10–30, or over 30, by time still left.
+- **Watched progress** — “3 of 40 watched” on the bar. The popup remembers the last 30 playlists on this device (title, counts, time left). Options can forget them. They are not synced.
+- **Study plan** — Split what is left, in playlist order, across the days and daily minutes you choose. Download it as Markdown.
+- **Export** — CSV of the loaded rows, or Markdown of the visible ones. The file stays on your device.
+- **Watch Later cleanup** — Lists watched videos. Nothing is removed until you press Remove. Each click uses YouTube’s own “Remove from Watch Later” item, and the batch stops if that item is missing. Other playlists do not show it.
+- **Hide watched, Load all, Reset** — Watched means a 90%+ progress bar. Load all scrolls until YouTube stops or 2,000 videos, and says “Loaded N of M” when the list is only partly loaded.
+- **Layout fallbacks** — Durations are read from the badge, then from an accessible name (“12 minutes, 4 seconds”). If most lengths cannot be read, the bar says the totals are partial instead of inventing them.
 
 ![Watch Later list filtered to a 30 minute budget](store/1-watch-later-30min-budget.png)
 
@@ -34,13 +37,13 @@
 
 | Permission | Why |
 |------------|-----|
-| `storage` | Remember your budget, sort, hide-watched, speed, and dismissed cards on your device. Uses `chrome.storage.local` and, for defaults, `chrome.storage.sync` across signed-in Chrome browsers. No data is sent to Playlist Lens servers — there are none. |
+| `storage` | Remember your budget, sort, hide-watched, speed, pack mode, study defaults, and dismissed cards. Uses `chrome.storage.local` and, for those settings, `chrome.storage.sync` across signed-in Chrome browsers. Playlist progress stays in local storage only. No data is sent to Fit the Queue servers — there are none. |
 
 **Host access:** The extension only injects a content script on `https://www.youtube.com/*` (declared in `content_scripts.matches`). It does not request broad `<all_urls>` access.
 
 ## Privacy
 
-No account, no analytics, no extension-initiated network requests. Filter-by-title text stays in memory on the page and is not saved. Ko-fi and Web Store rating links open only when you click them. Details: [PRIVACY.md](PRIVACY.md).
+No account, no analytics, no extension-initiated network requests. Title and channel filters stay in memory for that playlist and are not saved. Ko-fi and Web Store rating links open only when you click them. Details: [PRIVACY.md](PRIVACY.md).
 
 ## Build and test
 
@@ -59,7 +62,7 @@ Optional real-playlist e2e (needs network): `npm run e2e` without `PLAYLIST_LENS
 
 Load unpacked: `chrome://extensions` → Developer mode → **Load unpacked** → `dist/chrome`.
 
-When YouTube changes layout, update selectors in [`src/selectors.js`](src/selectors.js).
+When YouTube changes layout, update selectors in [`src/selectors.js`](src/selectors.js). The bar reports a partial total when fewer than half of the loaded rows have a length.
 
 ## Changelog
 

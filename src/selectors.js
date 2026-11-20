@@ -1,6 +1,7 @@
-// YouTube DOM selectors for Playlist Lens.
-// Centralized here so any future YouTube markup changes are a one-file fix.
-// Checked live on 2026-10-19 against both modern yt-lockup-view-model and classic ytd-playlist-video-renderer.
+// YouTube DOM selectors for Fit the Queue.
+// Centralized here so a YouTube markup change is a one-file fix.
+// Checked against classic ytd-playlist-video-renderer (2026-10-19) and
+// yt-lockup-view-model metadata (2026-11-20). Each field lists fallbacks.
 
 (function (root) {
   'use strict';
@@ -23,6 +24,18 @@
 
     // Watched progress bar inside thumbnail overlay
     PROGRESS_BAR: 'ytd-thumbnail-overlay-resume-playback-renderer #progress, .ytd-thumbnail-overlay-resume-playback-renderer #progress, .resume-playback #progress, [id="progress"]',
+
+    // Channel name and the byline that also carries views and upload age
+    CHANNEL: '#channel-name a, #channel-name, ytd-channel-name a, ytd-channel-name, .channel-name, a[href*="/@"], a[href*="/channel/"]',
+    META: '#metadata-line, #video-info, ytd-video-meta-block, .yt-content-metadata-view-model-wiz__metadata, yt-content-metadata-view-model, .channel-name',
+
+    // Playlist title in the header
+    PLAYLIST_TITLE: 'h1, yt-dynamic-sizing-formatted-string.ytd-playlist-header-renderer, #title',
+
+    // Watch Later overflow menu. The extension only clicks a menu item whose
+    // label is exactly "Remove from Watch Later".
+    MENU_BUTTON: 'button[aria-label="Action menu"], button[aria-label="More actions"], button[aria-label*="Action menu"], button[aria-label*="More actions"], .pl-fixture-menu',
+    MENU_ITEM: 'ytd-menu-service-item-renderer, tp-yt-paper-item, [role="menuitem"], .pl-fixture-menu-pop button',
 
     // Playlist header container holding metadata and stats
     HEADER: 'ytd-playlist-header-renderer, ytd-playlist-sidebar-renderer',

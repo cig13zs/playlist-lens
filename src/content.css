@@ -374,7 +374,11 @@ html[dark] .playlist-lens-toggle-chip input[type="checkbox"],
 }
 
 .playlist-lens-first-run[hidden],
-.playlist-lens-empty[hidden] {
+.playlist-lens-empty[hidden],
+.playlist-lens-panel[hidden],
+.playlist-lens-btn[hidden],
+.playlist-lens-notice[hidden],
+#pl-speed-board[hidden] {
   display: none !important;
 }
 
@@ -416,6 +420,111 @@ html[dark] .playlist-lens-toggle-chip input[type="checkbox"],
   z-index: 10;
   pointer-events: none;
   letter-spacing: 0.02em;
+}
+
+.playlist-lens-progress {
+  font-size: var(--pl-text-sm);
+  font-weight: var(--pl-weight-medium);
+  color: var(--pl-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.playlist-lens-speed-board {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.playlist-lens-speed-label {
+  font-size: var(--pl-text-xs);
+  font-weight: var(--pl-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pl-text-secondary);
+  margin-right: 2px;
+}
+
+.playlist-lens-speed-board .playlist-lens-chip {
+  background: var(--pl-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.playlist-lens-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pl-space-2);
+}
+
+.playlist-lens-more-sort {
+  background: var(--pl-surface);
+  border-radius: var(--pl-radius-pill);
+  padding: 6px 10px;
+}
+
+.playlist-lens-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pl-space-2);
+  background: var(--pl-surface);
+  border-radius: var(--pl-radius-md);
+  padding: 10px 12px;
+}
+
+.playlist-lens-panel-lead {
+  margin: 0;
+  font-size: var(--pl-text-sm);
+  color: var(--pl-text-secondary);
+}
+
+.playlist-lens-day h3 {
+  margin: 8px 0 4px;
+  font-size: var(--pl-text-md);
+  font-weight: var(--pl-weight-bold);
+}
+
+.playlist-lens-day ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.playlist-lens-day li {
+  margin: 2px 0;
+}
+
+.playlist-lens-cleanup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pl-space-2);
+  padding: 4px 0;
+}
+
+.playlist-lens-cleanup-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.playlist-lens-cleanup-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-lens-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--pl-text-sm);
+}
+
+.playlist-lens-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 @media (max-width: 700px) {

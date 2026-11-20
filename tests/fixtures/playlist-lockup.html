@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" dark>
+<head>
+  <meta charset="utf-8">
+  <title>Queue course - YouTube</title>
+  <style>
+    body { font-family: Roboto, sans-serif; background: #0f0f0f; color: #f1f1f1; margin: 0; padding: 24px 32px; }
+    a { color: inherit; text-decoration: none; }
+    ytd-playlist-header-renderer { display: block; margin-bottom: 16px; }
+    #contents > div { display: flex; gap: 16px; padding: 10px 0; }
+    .ytBadgeShapeText { display: inline-block; background: #000; padding: 2px 4px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <ytd-app>
+    <ytd-playlist-header-renderer>
+      <h1>Queue course</h1>
+      <div class="header-stats">
+        <span class="ytContentMetadataViewModelMetadataText">2 videos</span>
+      </div>
+    </ytd-playlist-header-renderer>
+    <div id="primary">
+      <ytd-playlist-video-list-renderer>
+        <div id="contents">
+          <div>
+            <yt-lockup-view-model data-id="lock-1">
+              <a class="ytLockupMetadataViewModelTitle" href="/watch?v=lock-1&list=PL_LOCKUP" aria-label="Intro to queues, 8 minutes 30 seconds">Intro to queues</a>
+              <div class="yt-content-metadata-view-model-wiz__metadata">
+                <span class="channel-name">Queue School</span>
+                <span>4,200 views</span>
+                <span>5 days ago</span>
+              </div>
+              <badge-shape><span class="ytBadgeShapeText">8:30</span></badge-shape>
+            </yt-lockup-view-model>
+          </div>
+          <div>
+            <yt-lockup-view-model data-id="lock-2">
+              <a class="ytLockupMetadataViewModelTitle" href="/watch?v=lock-2&list=PL_LOCKUP" aria-label="Office hours 12 minutes, 4 seconds">Office hours</a>
+              <div class="yt-content-metadata-view-model-wiz__metadata">
+                <span class="channel-name">Queue School</span>
+                <span>90 views</span>
+                <span>1 day ago</span>
+              </div>
+            </yt-lockup-view-model>
+          </div>
+        </div>
+      </ytd-playlist-video-list-renderer>
+    </div>
+  </ytd-app>
+</body>
+</html>

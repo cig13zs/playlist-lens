@@ -2,7 +2,7 @@
 <html lang="en" class="pl-app">
 <head>
   <meta charset="utf-8">
-  <title>Playlist Lens Settings</title>
+  <title>Fit the Queue Settings</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="design.css">
   <style>
@@ -140,7 +140,7 @@
     <header class="hero">
       <img src="icons/icon128.png" width="56" height="56" alt="">
       <div>
-        <h1>Playlist Lens</h1>
+        <h1>Fit the Queue</h1>
         <p class="subtitle">Defaults for the bar on YouTube playlists.</p>
       </div>
     </header>
@@ -164,6 +164,11 @@
           <option value="default">YouTube order</option>
           <option value="shortest">Shortest first</option>
           <option value="longest">Longest first</option>
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="mostViews">Most viewed</option>
+          <option value="leastViews">Least viewed</option>
+          <option value="channel">Channel A–Z</option>
         </select>
       </div>
       <div class="setting-row">
@@ -179,12 +184,56 @@
           <option value="2">2x</option>
         </select>
       </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">How a time budget packs videos</div>
+          <div class="setting-desc">Most videos keeps the shortest ones. Fill the time uses as many of your minutes as it can.</div>
+        </div>
+        <select id="default-fill" aria-label="How a time budget packs videos">
+          <option value="most">Most videos</option>
+          <option value="fill">Fill the time</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Show time left at 1x, 1.25x, 1.5x, and 2x</div>
+          <div class="setting-desc">A row under the total so you can compare speeds without retyping the budget.</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="default-speed-board" checked aria-label="Show time left at common playback speeds">
+        </label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Remember watched progress</div>
+          <div class="setting-desc">Keeps each playlist’s title, counts, and time left on this device. Not synced.</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="default-remember-progress" checked aria-label="Remember watched progress on this device">
+        </label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Study plan defaults</div>
+          <div class="setting-desc">Days and minutes per day when you open Study plan.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input id="default-study-days" type="number" min="1" max="60" value="5" aria-label="Study days" style="width:64px;">
+          <input id="default-study-minutes" type="number" min="1" max="600" value="45" aria-label="Minutes per study day" style="width:72px;">
+        </div>
+      </div>
     </div>
 
-    <p id="sync-hint" class="setting-desc" hidden>Defaults sync across signed-in Chrome browsers. Title filters stay on the page only.</p>
+    <p id="sync-hint" class="setting-desc" hidden>Sort, speed, and these defaults sync across signed-in Chrome browsers. Playlist progress, title filters, and channel filters stay on this device.</p>
 
     <div class="card">
-      <div class="setting-title" style="margin-bottom: 6px;">Support Playlist Lens</div>
+      <div class="setting-title" style="margin-bottom: 6px;">Saved playlist progress</div>
+      <div class="setting-desc" style="margin-bottom: 12px;">Clears the Watch Later and course snapshots shown in the toolbar popup. Settings stay.</div>
+      <button type="button" id="forget-progress" class="btn" style="background:var(--pl-surface);color:var(--pl-text);border:1px solid var(--pl-border);">Forget saved progress</button>
+    </div>
+
+    <div class="card">
+      <div class="setting-title" style="margin-bottom: 6px;">Support Fit the Queue</div>
       <div class="setting-desc" style="margin-bottom: 12px;">Free, private, and entirely in your browser. No accounts, trackers, or servers.</div>
       <a href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer" class="btn">Support on Ko-fi</a>
     </div>
@@ -192,7 +241,7 @@
     <div id="save-status">Settings saved.</div>
 
     <footer>
-      <div>Playlist Lens v<span id="app-version">1.2.0</span> · Made by jju1s</div>
+      <div>Fit the Queue v<span id="app-version">2.0.0</span> · Made by jju1s</div>
       <div>Unofficial extension, not affiliated with YouTube or Google LLC.</div>
     </footer>
   </div>

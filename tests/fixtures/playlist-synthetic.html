@@ -143,7 +143,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-1&list=WL&index=1">Designing Data-Intensive Applications: Chapter 1</a>
-                  <div class="channel-name">Computer Science Hub</div>
+                  <div class="channel-name">Computer Science Hub • 50,000 views • 4 years ago</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -161,7 +161,12 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-2&list=WL&index=2">Building Fast Web Applications in 2026</a>
-                  <div class="channel-name">Engineering Weekly</div>
+                  <div class="channel-name">Engineering Weekly • 2.1M views • 1 year ago</div>
+                  <button type="button" class="pl-fixture-menu" aria-label="Action menu">More</button>
+                  <div class="pl-fixture-menu-pop" hidden>
+                    <button type="button" class="pl-fixture-decoy">Delete playlist</button>
+                    <button type="button">Remove from Watch Later</button>
+                  </div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -179,7 +184,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-3&list=WL&index=3">System Architecture & Scalability Masterclass</a>
-                  <div class="channel-name">System Crafters</div>
+                  <div class="channel-name">System Crafters • 800,000 views • 3 months ago</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -194,7 +199,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-4&list=WL&index=4">10 Clean Code Habits You Should Practice</a>
-                  <div class="channel-name">Dev Shortcuts</div>
+                  <div class="channel-name">Dev Shortcuts • 3,200 views • 2 days ago</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -209,7 +214,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-5&list=WL&index=5">Database Indexing & Query Optimization Deep Dive</a>
-                  <div class="channel-name">Data Core</div>
+                  <div class="channel-name">Data Core • 120,000 views • 2 years ago</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -224,7 +229,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-6&list=WL&index=6">Full Stack Development Live Workshop & Q&A</a>
-                  <div class="channel-name">Tech Live</div>
+                  <div class="channel-name">Tech Live • No views</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -239,7 +244,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-7&list=WL&index=7">Microservices Communication Patterns and Best Practices</a>
-                  <div class="channel-name">Cloud Native Academy</div>
+                  <div class="channel-name">Cloud Native Academy • 900 views • 3 weeks ago</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -254,7 +259,7 @@
                 </div>
                 <div class="video-info">
                   <a id="video-title" href="/watch?v=vid-8&list=WL&index=8">Distributed Consensus Protocols from Scratch: Raft and Paxos</a>
-                  <div class="channel-name">Distributed Systems Lab</div>
+                  <div class="channel-name">Distributed Systems Lab • 10M views • 6 years ago</div>
                 </div>
               </ytd-playlist-video-renderer>
 
@@ -264,5 +269,27 @@
       </ytd-browse>
     </div>
   </ytd-app>
+  <script>
+    window.__plDecoy = 0;
+    window.__plRemoved = 0;
+    document.addEventListener('click', event => {
+      const menu = event.target.closest && event.target.closest('.pl-fixture-menu');
+      if (menu) {
+        const pop = menu.parentElement.querySelector('.pl-fixture-menu-pop');
+        if (pop) pop.hidden = false;
+        return;
+      }
+      if (event.target.classList && event.target.classList.contains('pl-fixture-decoy')) {
+        window.__plDecoy += 1;
+        return;
+      }
+      const label = (event.target.textContent || '').replace(/\s+/g, ' ').trim();
+      if (label === 'Remove from Watch Later') {
+        window.__plRemoved += 1;
+        const row = event.target.closest('ytd-playlist-video-renderer');
+        if (row) row.remove();
+      }
+    });
+  </script>
 </body>
 </html>

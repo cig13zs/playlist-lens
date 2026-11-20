@@ -20,7 +20,7 @@ We aim to respond within one week. We credit reporters in the fix unless you pre
 
 ## Scope
 
-In scope: Playlist Lens extension code (`src/`), build output, and how it handles YouTube page data and `chrome.storage`.
+In scope: Fit the Queue extension code (`src/`, formerly Playlist Lens), build output, and how it handles YouTube page data and `chrome.storage`.
 
 Out of scope: YouTube itself, third-party sites linked from the options/popup (Ko-fi, Chrome Web Store), and social engineering.
 

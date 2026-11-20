@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.0 (2026-11-20)
+
+Fit the Queue is the new name for Playlist Lens. The extension id, Firefox id, and `playlist_lens_settings` storage key are unchanged, so an update keeps your budget, sort, speed, and dismissed cards. New preferences start at their defaults (`fillMode: most`, speed comparison on, progress memory on, study plan 5 days × 45 minutes).
+
+### Added
+- Time remaining at 1x, 1.25x, 1.5x, and 2x, shown together. Choosing a speed still drives the time budget.
+- Watched progress for each playlist (title, counts, percent, time left), stored only in `chrome.storage.local` and listed in the toolbar popup. A button on the options page forgets it.
+- Sort by newest, oldest, most viewed, least viewed, or channel, plus filters for channel name and length still left (under 10, 10–30, over 30 minutes).
+- Fill the time: when you set a minute budget, pack the set of videos that uses the most of that time. Most videos, the previous shortest-first pack, stays the default.
+- Study plan: split the remaining videos, in playlist order, across the days and minutes you choose. A video longer than one day is not cut in half. Download the plan as Markdown.
+- Export the loaded rows to CSV, or the visible rows to Markdown, as a file on your device. No download permission and no upload.
+- Watch Later cleanup. The panel lists watched rows. Nothing is removed until you press Remove on a row, or confirm and press Remove selected. Each removal clicks YouTube’s own “Remove from Watch Later” item and stops if that item is not there. Stop halts a batch. Other playlists do not show the control.
+- A layout warning when titles or most lengths cannot be read, and fallbacks for badge text, aria-label durations, and lockup metadata.
+
+### Changed
+- Store name: **Fit the Queue: YouTube playlist time & sort**.
+- Short description now says what the extension does: total and remaining time at 1x–2x, sort, filter, fill, export, and study days.
+
 ## 1.2.0 (2026-11-17)
 
 ### Security
